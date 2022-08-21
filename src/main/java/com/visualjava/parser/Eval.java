@@ -1,40 +1,53 @@
 package com.visualjava.parser;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class Eval {
-    private Eval() {}
+    public static void main(String[] args) {
+        System.out.println(Eval.eval("0 - 7"));
+    }
+
+    private final Map<String, Integer> localVars;
+
+    private Eval(Map<String, Integer> localVars) {
+        this.localVars = localVars;
+    }
 
     public static int eval(String expression) {
         return eval(expression, new HashMap<>());
     }
 
     public static int eval(String expression, Map<String, Integer> localVars) throws ExpressionFormatException {
-        Queue<String> fragments = tokenize(expression);
-        Queue<Token> tokens = new LinkedList<>();
-
-        for (String fragment : fragments) {
-            if (isInteger(fragment))
-                tokens.add(new Constant(fragment));
-            else if (localVars.containsKey(fragment))
-                tokens.add(new Constant(localVars.get(fragment)));
-            else
-                tokens.add(new Operator(fragment));
-        }
-
-        return calcRPN(shunting(tokens), localVars, null);
+        return new Eval(localVars)._eval(expression);
     }
 
-    private static Queue<String> tokenize(String expression) {
+    private int _eval(String expression) {
+        Queue<Token> tokens = tokenize(expression);
+        Queue<Token> rpnTokens = shunting(tokens);
+        return calcRPN(rpnTokens);
+    }
+
+    private Queue<Token> tokenize(String expression) {
         Pattern exprPattern = Pattern.compile("(\\d+|[+\\-*/%^()]|[a-zA-Z_]+|\\()");
         Matcher exprMatcher = exprPattern.matcher(expression);
-        exprMatcher.results();
+        Queue<Token> tokens = new LinkedList<>();
+        while (exprMatcher.find()) {
+            String token = exprMatcher.group();
+            if (isInteger(token)) {
+                tokens.add(new Constant(token));
+            }
+            else if (localVars.containsKey(token)) {
+                tokens.add(new Variable(token));
+            }
+            else {
+                tokens.add(new Operator(token));
+            }
+        }
 
-        return new LinkedList<>();
+        return tokens;
     }
 
     private static Queue<Token> shunting(Queue<Token> tokens) {
@@ -43,19 +56,12 @@ public class Eval {
         while (!tokens.isEmpty()) {
             Token token = tokens.remove();
             switch (token.getType()) {
-                case CONSTANT -> {
-                    output.add(token);
-                    break;
-                }
-                case VARIABLE -> {
-                    output.add(token);
-                    break;
-                }
+                case CONSTANT, VARIABLE -> output.add(token);
                 case OPERATOR -> {
                     Operator op1 = (Operator) token;
                     while (!operatorStack.isEmpty()) {
                         Operator op2 = operatorStack.pop();
-                        if (op2.getOperator() != "(" && op2.getPrecedence() >= op1.getPrecedence()) {
+                        if (!op2.getOperator().equals("(") && op2.getPrecedence() >= op1.getPrecedence()) {
                             output.add(op2);
                         } else {
                             operatorStack.push(op2);
@@ -64,30 +70,24 @@ public class Eval {
                     }
                     operatorStack.push(op1);
                 }
-                case LPARENTH -> {
-                    operatorStack.push((Operator) token);
-                }
+                case LPARENTH ->
+                        operatorStack.push((Operator) token);
                 case RPARENTH -> {
 
                 }
             }
         }
+        while (!operatorStack.isEmpty()) output.add(operatorStack.pop());
         return output;
     }
 
-    private static int calcRPN(Queue<Token> rpnStack, Map<String, Integer> localVars, Map<String, Function<Integer, Integer>> localFuns) {
+    private int calcRPN(Queue<Token> rpnQueue) {
         Stack<Integer> calcStack = new Stack<>();
-        for (Token token : rpnStack) {
+        for (Token token : rpnQueue) {
             switch (token.getType()) {
-                case CONSTANT:
-                    calcStack.push(((Constant) token).getValue());
-                    break;
-                case VARIABLE:
-                    calcStack.push(((Variable) token).getValue(localVars));
-                    break;
-                case OPERATOR:
-                    calcStack.push(((Operator) token).eval(calcStack.pop(), calcStack.pop()));
-                    break;
+                case CONSTANT -> calcStack.push(((Constant) token).getValue());
+                case VARIABLE -> calcStack.push(((Variable) token).getValue(localVars));
+                case OPERATOR -> calcStack.push(((Operator) token).eval(calcStack.pop(), calcStack.pop()));
             }
         }
         return calcStack.pop();
@@ -102,10 +102,7 @@ public class Eval {
         return true;
     }
 
-    private static int toInteger(String number) {
-        return Integer.parseInt(number);
-    }
-
+    // UPN Elements
     private static abstract class Token {
         private final TokenType type;
 
@@ -116,16 +113,9 @@ public class Eval {
         public TokenType getType() {
             return type;
         }
-
-        public static Token wrap(String value) {
-            return null;
-        }
     }
 
-
     private static class Operator extends Token {
-        private static final String[] acceptedOperators = new String[] {"+", "-", "*", "/"};
-
         private final String operator;
 
         public Operator(String operator) {
@@ -134,27 +124,34 @@ public class Eval {
         }
 
         public int getPrecedence() {
-            switch (operator) {
-                case "+": return 2;
-                case "-": return 2;
-                case "*": return 1;
-                case "/": return 1;
-                default: return 0;
-            }
+            return Operator.getPrecedence(operator);
         }
 
-        public int eval(int left, int right) {
-            switch (operator) {
-                case "+": return left + right;
-                case "-": return left - right;
-                case "*": return left * right;
-                case "/": return left / right;
-                default: return 0;
-            }
+        public static int getPrecedence(String operator) {
+            return switch (operator) {
+                case "+", "-" -> 2;
+                case "*", "/" -> 1;
+                default -> 0;
+            };
+        }
+
+        public int eval(int right, int left) {
+            return switch (operator) {
+                case "+" -> left + right;
+                case "-" -> left - right;
+                case "*" -> left * right;
+                case "/" -> left / right;
+                default -> 0;
+            };
         }
 
         public String getOperator() {
             return operator;
+        }
+
+        @Override
+        public String toString() {
+            return "OPERATOR: " + getOperator();
         }
     }
 
@@ -173,9 +170,14 @@ public class Eval {
         public int getValue() {
             return value;
         }
+
+        @Override
+        public String toString() {
+            return "CONSTANT: " + getValue();
+        }
     }
 
-    private static class Variable extends Token {
+    private class Variable extends Token {
         private final String handle;
 
         public Variable(String handle) {
@@ -184,11 +186,25 @@ public class Eval {
         }
 
         public int getValue(Map<String, Integer> localVars) {
+            if (!localVars.containsKey(getVarName())) throw new MissingVariableException();
             return localVars.get(this.handle);
+        }
+
+        public int getValue() {
+            return getValue(localVars);
+        }
+
+        public String getVarName() {
+            return this.handle;
+        }
+
+        @Override
+        public String toString() {
+            return "VARIABLE: " + getVarName() + "; local value " + getValue();
         }
     }
 
-    private static enum TokenType {
+    private enum TokenType {
         VARIABLE,
         CONSTANT,
         OPERATOR,
@@ -197,6 +213,7 @@ public class Eval {
         RPARENTH;
     }
 
+    // Exceptions
     public static class ExpressionFormatException extends RuntimeException {
 
     }
@@ -207,78 +224,5 @@ public class Eval {
 
     public static class MissingFunctionException extends RuntimeException {
 
-    }
-
-    private abstract class MathExpr {
-        public abstract int eval();
-    }
-
-    private class NumericConstant extends MathExpr {
-        private final int value;
-
-        public NumericConstant(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public int eval() {
-            return value;
-        }
-    }
-
-    private class BinaryOperator extends MathExpr {
-        private final String operator;
-        private final MathExpr left, right;
-
-        public BinaryOperator(String operator, MathExpr left, MathExpr right) {
-            this.operator = operator;
-            this.left = left;
-            this.right = right;
-        }
-
-
-        @Override
-        public int eval() {
-            int left = this.left.eval(), right = this.right.eval();
-
-            switch (operator) {
-                case "+": return left + right;
-                case "-": return left - right;
-                case "*": return left * right;
-                case "/": return left / right;
-                default: return 0;
-            }
-        }
-    }
-
-
-    private static enum OpType {
-        POW ("^", 4, Assoc.RIGHT),
-        MUL ("*", 3, Assoc.LEFT),
-        DIV ("/", 3, Assoc.LEFT),
-        ADD ("+", 2, Assoc.LEFT),
-        SUB ("-", 2, Assoc.LEFT);
-
-        private static final Map<String, OpType> opNames = new HashMap<>();
-
-        private String opChar;
-        private int precedence;
-        private Assoc assoc;
-
-        OpType(String opChar, int precedence, Assoc assoc) {
-            this.assoc = assoc;
-            this.precedence = precedence;
-            this.assoc = assoc;
-
-            register();
-        }
-
-        private void register() {
-            OpType.opNames.put(opChar, this);
-        }
-    }
-
-    private static enum Assoc {
-        LEFT, RIGHT
     }
 }
