@@ -1,0 +1,37 @@
+{
+  "type": "array",
+
+  "$defs": {
+    "argument": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "argc": {
+          "type": "integer"
+        },
+        "sign": {
+          "type": "boolean"
+        },
+        "jump": {
+          "type": "boolean"
+        }
+      }
+    },
+    "opcode": {
+      "type": "object",
+      "properties": {
+        "mnem": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer"
+        },
+        "args": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

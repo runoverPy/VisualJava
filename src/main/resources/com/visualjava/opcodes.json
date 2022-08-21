@@ -1,0 +1,343 @@
+[
+    {"mnem": "nop", "code": 0, "jump": false, "args":[]},
+    {"mnem": "aconst_null", "code": 1, "jump": false, "args":[]},
+    {"mnem": "iconst_m1", "code": 2, "jump": false, "args":[]},
+    {"mnem": "iconst_0", "code": 3, "jump": false, "args":[]},
+    {"mnem": "iconst_1", "code": 4, "jump": false, "args":[]},
+    {"mnem": "iconst_2", "code": 5, "jump": false, "args":[]},
+    {"mnem": "iconst_3", "code": 6, "jump": false, "args":[]},
+    {"mnem": "iconst_4", "code": 7, "jump": false, "args":[]},
+    {"mnem": "iconst_5", "code": 8, "jump": false, "args":[]},
+    {"mnem": "lconst_0", "code": 9, "jump": false, "args":[]},
+    {"mnem": "lconst_1", "code": 10, "jump": false, "args":[]},
+    {"mnem": "fconst_0", "code": 11, "jump": false, "args":[]},
+    {"mnem": "fconst_1", "code": 12, "jump": false, "args":[]},
+    {"mnem": "fconst_2", "code": 13, "jump": false, "args":[]},
+    {"mnem": "dconst_0", "code": 14, "jump": false, "args":[]},
+    {"mnem": "dconst_1", "code": 15, "jump": false, "args":[]},
+    {"mnem": "bipush", "code": 16, "jump": false, "args":[
+        {"name":"byte", "argc":1, "sign":true, "jump":false}
+    ]},
+    {"mnem": "sipush", "code": 17, "jump": false, "args":[
+        {"name":"short", "argc":2, "sign":true, "jump":false}
+    ]},
+    {"mnem": "ldc", "code": 18, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "ldc_w", "code": 19, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "ldc2_w", "code": 20, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "iload", "code": 21, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "lload", "code": 22, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "fload", "code": 23, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "dload", "code": 24, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "aload", "code": 25, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "iload_0", "code": 26, "jump": false, "args":[]},
+    {"mnem": "iload_1", "code": 27, "jump": false, "args":[]},
+    {"mnem": "iload_2", "code": 28, "jump": false, "args":[]},
+    {"mnem": "iload_3", "code": 29, "jump": false, "args":[]},
+    {"mnem": "lload_0", "code": 30, "jump": false, "args":[]},
+    {"mnem": "lload_1", "code": 31, "jump": false, "args":[]},
+    {"mnem": "lload_2", "code": 32, "jump": false, "args":[]},
+    {"mnem": "lload_3", "code": 33, "jump": false, "args":[]},
+    {"mnem": "fload_0", "code": 34, "jump": false, "args":[]},
+    {"mnem": "fload_1", "code": 35, "jump": false, "args":[]},
+    {"mnem": "fload_2", "code": 36, "jump": false, "args":[]},
+    {"mnem": "fload_3", "code": 37, "jump": false, "args":[]},
+    {"mnem": "dload_0", "code": 38, "jump": false, "args":[]},
+    {"mnem": "dload_1", "code": 39, "jump": false, "args":[]},
+    {"mnem": "dload_2", "code": 40, "jump": false, "args":[]},
+    {"mnem": "dload_3", "code": 41, "jump": false, "args":[]},
+    {"mnem": "aload_0", "code": 42, "jump": false, "args":[]},
+    {"mnem": "aload_1", "code": 43, "jump": false, "args":[]},
+    {"mnem": "aload_2", "code": 44, "jump": false, "args":[]},
+    {"mnem": "aload_3", "code": 45, "jump": false, "args":[]},
+    {"mnem": "iaload", "code": 46, "jump": false, "args":[]},
+    {"mnem": "laload", "code": 47, "jump": false, "args":[]},
+    {"mnem": "faload", "code": 48, "jump": false, "args":[]},
+    {"mnem": "daload", "code": 49, "jump": false, "args":[]},
+    {"mnem": "aaload", "code": 50, "jump": false, "args":[]},
+    {"mnem": "baload", "code": 51, "jump": false, "args":[]},
+    {"mnem": "caload", "code": 52, "jump": false, "args":[]},
+    {"mnem": "saload", "code": 53, "jump": false, "args":[]},
+    {"mnem": "istore", "code": 54, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "lstore", "code": 55, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "fstore", "code": 56, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "dstore", "code": 57, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "astore", "code": 58, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "istore_0", "code": 59, "jump": false, "args":[]},
+    {"mnem": "istore_1", "code": 60, "jump": false, "args":[]},
+    {"mnem": "istore_2", "code": 61, "jump": false, "args":[]},
+    {"mnem": "istore_3", "code": 62, "jump": false, "args":[]},
+    {"mnem": "lstore_0", "code": 63, "jump": false, "args":[]},
+    {"mnem": "lstore_1", "code": 64, "jump": false, "args":[]},
+    {"mnem": "lstore_2", "code": 65, "jump": false, "args":[]},
+    {"mnem": "lstore_3", "code": 66, "jump": false, "args":[]},
+    {"mnem": "fstore_0", "code": 67, "jump": false, "args":[]},
+    {"mnem": "fstore_1", "code": 68, "jump": false, "args":[]},
+    {"mnem": "fstore_2", "code": 69, "jump": false, "args":[]},
+    {"mnem": "fstore_3", "code": 70, "jump": false, "args":[]},
+    {"mnem": "dstore_0", "code": 71, "jump": false, "args":[]},
+    {"mnem": "dstore_1", "code": 72, "jump": false, "args":[]},
+    {"mnem": "dstore_2", "code": 73, "jump": false, "args":[]},
+    {"mnem": "dstore_3", "code": 74, "jump": false, "args":[]},
+    {"mnem": "astore_0", "code": 75, "jump": false, "args":[]},
+    {"mnem": "astore_1", "code": 76, "jump": false, "args":[]},
+    {"mnem": "astore_2", "code": 77, "jump": false, "args":[]},
+    {"mnem": "astore_3", "code": 78, "jump": false, "args":[]},
+    {"mnem": "iastore", "code": 79, "jump": false, "args":[]},
+    {"mnem": "lastore", "code": 80, "jump": false, "args":[]},
+    {"mnem": "fastore", "code": 81, "jump": false, "args":[]},
+    {"mnem": "dastore", "code": 82, "jump": false, "args":[]},
+    {"mnem": "aastore", "code": 83, "jump": false, "args":[]},
+    {"mnem": "bastore", "code": 84, "jump": false, "args":[]},
+    {"mnem": "castore", "code": 85, "jump": false, "args":[]},
+    {"mnem": "sastore", "code": 86, "jump": false, "args":[]},
+    {"mnem": "pop", "code": 87, "jump": false, "args":[]},
+    {"mnem": "pop2", "code": 88, "jump": false, "args":[]},
+    {"mnem": "dup", "code": 89, "jump": false, "args":[]},
+    {"mnem": "dup_x1", "code": 90, "jump": false, "args":[]},
+    {"mnem": "dup_x2", "code": 91, "jump": false, "args":[]},
+    {"mnem": "dup2", "code": 92, "jump": false, "args":[]},
+    {"mnem": "dup2_x1", "code": 93, "jump": false, "args":[]},
+    {"mnem": "dup2_x2", "code": 94, "jump": false, "args":[]},
+    {"mnem": "swap", "code": 95, "jump": false, "args":[]},
+    {"mnem": "iadd", "code": 96, "jump": false, "args":[]},
+    {"mnem": "ladd", "code": 97, "jump": false, "args":[]},
+    {"mnem": "fadd", "code": 98, "jump": false, "args":[]},
+    {"mnem": "dadd", "code": 99, "jump": false, "args":[]},
+    {"mnem": "isub", "code": 100, "jump": false, "args":[]},
+    {"mnem": "lsub", "code": 101, "jump": false, "args":[]},
+    {"mnem": "fsub", "code": 102, "jump": false, "args":[]},
+    {"mnem": "dsub", "code": 103, "jump": false, "args":[]},
+    {"mnem": "imul", "code": 104, "jump": false, "args":[]},
+    {"mnem": "lmul", "code": 105, "jump": false, "args":[]},
+    {"mnem": "fmul", "code": 106, "jump": false, "args":[]},
+    {"mnem": "dmul", "code": 107, "jump": false, "args":[]},
+    {"mnem": "idiv", "code": 108, "jump": false, "args":[]},
+    {"mnem": "ldiv", "code": 109, "jump": false, "args":[]},
+    {"mnem": "fdiv", "code": 110, "jump": false, "args":[]},
+    {"mnem": "ddiv", "code": 111, "jump": false, "args":[]},
+    {"mnem": "irem", "code": 112, "jump": false, "args":[]},
+    {"mnem": "lrem", "code": 113, "jump": false, "args":[]},
+    {"mnem": "frem", "code": 114, "jump": false, "args":[]},
+    {"mnem": "drem", "code": 115, "jump": false, "args":[]},
+    {"mnem": "ineg", "code": 116, "jump": false, "args":[]},
+    {"mnem": "lneg", "code": 117, "jump": false, "args":[]},
+    {"mnem": "fneg", "code": 118, "jump": false, "args":[]},
+    {"mnem": "dneg", "code": 119, "jump": false, "args":[]},
+    {"mnem": "ishl", "code": 120, "jump": false, "args":[]},
+    {"mnem": "lshl", "code": 121, "jump": false, "args":[]},
+    {"mnem": "ishr", "code": 122, "jump": false, "args":[]},
+    {"mnem": "lshr", "code": 123, "jump": false, "args":[]},
+    {"mnem": "iushr", "code": 124, "jump": false, "args":[]},
+    {"mnem": "lushr", "code": 125, "jump": false, "args":[]},
+    {"mnem": "iand", "code": 126, "jump": false, "args":[]},
+    {"mnem": "land", "code": 127, "jump": false, "args":[]},
+    {"mnem": "ior", "code": 128, "jump": false, "args":[]},
+    {"mnem": "lor", "code": 129, "jump": false, "args":[]},
+    {"mnem": "ixor", "code": 130, "jump": false, "args":[]},
+    {"mnem": "lxor", "code": 131, "jump": false, "args":[]},
+    {"mnem": "iinc", "code": 132, "jump": false, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}, 
+        {"name":"const", "argc":1, "sign":true, "jump":false}
+    ]},
+    {"mnem": "i2l", "code": 133, "jump": false, "args":[]},
+    {"mnem": "i2f", "code": 134, "jump": false, "args":[]},
+    {"mnem": "i2d", "code": 135, "jump": false, "args":[]},
+    {"mnem": "l2i", "code": 136, "jump": false, "args":[]},
+    {"mnem": "l2f", "code": 137, "jump": false, "args":[]},
+    {"mnem": "l2d", "code": 138, "jump": false, "args":[]},
+    {"mnem": "f2i", "code": 139, "jump": false, "args":[]},
+    {"mnem": "f2l", "code": 140, "jump": false, "args":[]},
+    {"mnem": "f2d", "code": 141, "jump": false, "args":[]},
+    {"mnem": "d2i", "code": 142, "jump": false, "args":[]},
+    {"mnem": "d2l", "code": 143, "jump": false, "args":[]},
+    {"mnem": "d2f", "code": 144, "jump": false, "args":[]},
+    {"mnem": "i2b", "code": 145, "jump": false, "args":[]},
+    {"mnem": "i2c", "code": 146, "jump": false, "args":[]},
+    {"mnem": "i2s", "code": 147, "jump": false, "args":[]},
+    {"mnem": "lcmp", "code": 148, "jump": false, "args":[]},
+    {"mnem": "fcmpl", "code": 149, "jump": false, "args":[]},
+    {"mnem": "fcmpg", "code": 150, "jump": false, "args":[]},
+    {"mnem": "dcmpl", "code": 151, "jump": false, "args":[]},
+    {"mnem": "dcmpg", "code": 152, "jump": false, "args":[]},
+    {"mnem": "ifeq", "code": 153, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "ifne", "code": 154, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "iflt", "code": 155, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "ifge", "code": 156, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "ifgt", "code": 157, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "ifle", "code": 158, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_icmpeq", "code": 159, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_icmpne", "code": 160, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_icmplt", "code": 161, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_icmpge", "code": 162, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_icmpgt", "code": 163, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_icmple", "code": 164, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_acmpeq", "code": 165, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "if_acmpne", "code": 166, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "goto", "code": 167, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "jsr", "code": 168, "jump": true, "depr": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "ret", "code": 169, "jump": false, "depr": true, "args":[
+        {"name":"index", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "tableswitch", "code": 170, "jump": false, "args":[
+        {"name":"%", "argc":4}, 
+        {"name":"default", "argc":4, "sign":true, "jump":false}, 
+        {"name":"low", "argc":4, "sign":true, "jump":false}, 
+        {"name":"high", "argc":4, "sign":true, "jump":false}, 
+        {"name":"*", "varargs":{"name":"jump_offsets", "count":"$high - $low + 1", "args":[
+            {"name":"offset", "argc":4, "sign":true, "jump":false}
+        ]}}
+    ]},
+    {"mnem": "lookupswitch", "code": 171, "jump": false, "args":[
+        {"name":"%", "argc":4}, 
+        {"name":"default", "argc":4, "sign":true, "jump":false}, 
+        {"name":"nargs", "argc":4, "sign":true, "jump":false}, 
+        {"name":"*", "varargs":{"name":"match_offset_pairs", "count":"$nargs", "args":[
+            {"name":"match", "argc":4, "sign":true, "jump":false}, 
+            {"name":"offset", "argc":4, "sign":true, "jump":true}
+        ]}}
+    ]},
+    {"mnem": "ireturn", "code": 172, "jump": false, "args":[]},
+    {"mnem": "lreturn", "code": 173, "jump": false, "args":[]},
+    {"mnem": "freturn", "code": 174, "jump": false, "args":[]},
+    {"mnem": "dreturn", "code": 175, "jump": false, "args":[]},
+    {"mnem": "areturn", "code": 176, "jump": false, "args":[]},
+    {"mnem": "return", "code": 177, "jump": false, "args":[]},
+    {"mnem": "getstatic", "code": 178, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "putstatic", "code": 179, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "getfield", "code": 180, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "putfield", "code": 181, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "invokevirtual", "code": 182, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "invokespecial", "code": 183, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "invokestatic", "code": 184, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "invokeinterface", "code": 185, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false},
+        {"name":"count", "argc":1, "sign":false, "jump":false},
+        {"name":"_", "argc":1}
+    ]},
+    {"mnem": "invokedynamic", "code": 186, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false},
+        {"name":"_", "argc":2}
+    ]},
+    {"mnem": "new", "code": 187, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "newarray", "code": 188, "jump": false, "args":[
+        {"name":"atype", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "anewarray", "code": 189, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "arraylength", "code": 190, "jump": false, "args":[]},
+    {"mnem": "athrow", "code": 191, "jump": false, "args":[]},
+    {"mnem": "checkcast", "code": 192, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "instanceof", "code": 193, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false}
+    ]},
+    {"mnem": "monitorenter", "code": 194, "jump": false, "args":[]},
+    {"mnem": "monitorexit", "code": 195, "jump": false, "args":[]},
+    {"mnem": "wide", "code": 196, "jump": false, "args":[
+        {"name":"opcode", "argc":1}, 
+        {"name":"/", "match":"$opcode", "opargs":[
+            {"case":[21, 22, 23, 24, 25, 54, 55, 56, 57, 58, 169], "args":[
+                {"name":"index", "argc":2, "sign":false, "jump":false}
+            ]},
+            {"case":[132], "args":[
+                {"name":"index", "argc":2, "sign":false, "jump":false}, 
+                {"name":"count", "argc":2, "sign":true, "jump":false}
+            ]}
+        ]}
+    ]},
+    {"mnem": "multianewarray", "code": 197, "jump": false, "args":[
+        {"name":"index", "argc":2, "sign":false, "jump":false},
+        {"name":"dimensions", "argc":1, "sign":false, "jump":false}
+    ]},
+    {"mnem": "ifnull", "code": 198, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "ifnonnull", "code": 199, "jump": true, "args":[
+        {"name":"branch", "argc":2, "sign":true, "jump":true}
+    ]},
+    {"mnem": "goto_w", "code": 200, "jump": true, "args":[
+        {"name":"branch", "argc":4, "sign":true, "jump":true}
+    ]},
+    {"mnem": "jsr_w", "code": 201, "jump": true, "depr": true, "args":[
+        {"name":"branch", "argc":4, "sign":true, "jump":true}
+    ]},
+    {"mnem": "breakpoint", "code": 202, "jump": false, "args":[]},
+    {"mnem": "impdep1", "code": 254, "jump": false, "args":[]},
+    {"mnem": "impdep2", "code": 255, "jump": false, "args":[]}
+]
