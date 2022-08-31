@@ -6,10 +6,6 @@ import java.util.regex.Pattern;
 
 
 public class Eval {
-    public static void main(String[] args) {
-        System.out.println(Eval.eval("0 - 7"));
-    }
-
     private final Map<String, Integer> localVars;
 
     private Eval(Map<String, Integer> localVars) {

@@ -241,7 +241,7 @@
         {"name":"default", "argc":4, "sign":true, "jump":false}, 
         {"name":"low", "argc":4, "sign":true, "jump":false}, 
         {"name":"high", "argc":4, "sign":true, "jump":false}, 
-        {"name":"*", "varargs":{"name":"jump_offsets", "count":"$high - $low + 1", "args":[
+        {"name":"*", "varargs":{"name":"jump_offsets", "count":"high - low + 1", "args":[
             {"name":"offset", "argc":4, "sign":true, "jump":false}
         ]}}
     ]},
@@ -249,7 +249,7 @@
         {"name":"%", "argc":4}, 
         {"name":"default", "argc":4, "sign":true, "jump":false}, 
         {"name":"nargs", "argc":4, "sign":true, "jump":false}, 
-        {"name":"*", "varargs":{"name":"match_offset_pairs", "count":"$nargs", "args":[
+        {"name":"*", "varargs":{"name":"match_offset_pairs", "count":"nargs", "args":[
             {"name":"match", "argc":4, "sign":true, "jump":false}, 
             {"name":"offset", "argc":4, "sign":true, "jump":true}
         ]}}
@@ -311,7 +311,7 @@
     {"mnem": "monitorexit", "code": 195, "jump": false, "args":[]},
     {"mnem": "wide", "code": 196, "jump": false, "args":[
         {"name":"opcode", "argc":1}, 
-        {"name":"/", "match":"$opcode", "opargs":[
+        {"name":"/", "match":"opcode", "opargs":[
             {"case":[21, 22, 23, 24, 25, 54, 55, 56, 57, 58, 169], "args":[
                 {"name":"index", "argc":2, "sign":false, "jump":false}
             ]},

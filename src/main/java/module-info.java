@@ -11,4 +11,8 @@ module com.visualjava {
     opens com.visualjava to javafx.fxml;
     exports com.visualjava;
     exports com.visualjava.parser;
+    exports com.visualjava.data;
+    exports com.visualjava.vm;
+    opens com.visualjava.vm to javafx.fxml;
+    exports com.visualjava.data.constants;
 }
