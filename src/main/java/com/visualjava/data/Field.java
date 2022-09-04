@@ -1,5 +1,7 @@
 package com.visualjava.data;
 
+import com.visualjava.data.attributes.Attribute;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.LinkedList;

@@ -1,0 +1,7 @@
+.tab-pane .tab-header-area .tab-header-background {
+	-fx-opacity: 0;
+}
+
+.tab-pane .tab-header-area .headers-region .tab {
+	-fx-margin-top: 0;
+}

@@ -6,23 +6,39 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ConstMethodHandle extends Constant implements LoadableConst {
-    private final Class<Constant> refKind;
-    private final Constant reference;
+    private final int reference_kind;
+    private final int reference_index;
 
-    private ConstMethodHandle(Class<Constant> refKind, Constant reference) {
-        this.refKind = refKind;
-        this.reference = reference;
+    private ConstMethodHandle(ConstantPool pool, int reference_kind, int reference_index) {
+        super(pool);
+        this.reference_kind = reference_kind;
+        this.reference_index = reference_index;
     }
 
     public static void read(DataInputStream dis, ConstantPool.ConstPoolBuilder poolBuilder) throws IOException {
         int reference_kind = dis.readUnsignedByte();
         int reference_index = dis.readUnsignedShort();
-        poolBuilder.submitConstant(null);
+        poolBuilder.submitConstant(new ConstMethodHandle(poolBuilder.getConstPool(), reference_kind, reference_index));
+    }
+
+    public int getReferenceKind() {
+        return reference_kind;
+    }
+
+    public Constant getReference() {
+        return getPool().getConstant(reference_index);
     }
 
     @Override
     public VMReference load() {
         return null;
+    }
+
+    public String toString(int depth, boolean onNewLine) {
+        return (onNewLine ? "\t".repeat(depth) : "") + "{\n" +
+          "\t".repeat(depth + 1) + "reference_kind: " + reference_kind + "\n" +
+          "\t".repeat(depth + 1) + "reference: " + getReference().toString(depth+1, false) + "\n" +
+          "\t".repeat(depth) + "}";
     }
 
     public enum RefKind {

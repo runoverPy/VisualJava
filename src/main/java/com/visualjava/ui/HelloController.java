@@ -1,4 +1,4 @@
-package com.visualjava;
+package com.visualjava.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

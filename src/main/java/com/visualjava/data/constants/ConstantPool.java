@@ -22,6 +22,7 @@ public final class ConstantPool {
         int constCount = inputStream.readUnsignedShort();
         while (builder.getIndex() < constCount) {
             int tag = dis.readUnsignedByte();
+            if (builder.index == 37) System.out.println("Spoilers its " + tag);
             switch (tag) {
                 case  1 -> ConstUTF8.read(dis, builder);
                 case  3 -> ConstInt.read(dis, builder);
@@ -59,12 +60,25 @@ public final class ConstantPool {
         String constValues = "";
 
         for (Map.Entry<Integer, Constant> entry : constants.entrySet()) {
-            constValues += "\t\t" + entry.getKey() + ": " + entry.getValue() + "\n";
+            constValues += "\t" + entry.getKey() + ": " + entry.getValue() + "\n";
         }
 
-        return "ConstantPool {\n" +
-                "\tconstants = { \n" + constValues + " \t}\n" +
-                '}';
+        return "ConstantPool {\n" + constValues + '}';
+    }
+
+    public String toString(int depth) {
+        StringBuilder constValues = new StringBuilder();
+
+        for (Map.Entry<Integer, Constant> entry : constants.entrySet()) {
+            constValues
+              .append("\t".repeat(depth + 1))
+              .append(entry.getKey())
+              .append(": ")
+              .append(entry.getValue())
+              .append("\n");
+        }
+
+        return "ConstantPool {\n" + constValues + "\t".repeat(depth) + '}';
     }
 
     public class ConstPoolBuilder {

@@ -1,13 +1,13 @@
 package com.visualjava.types;
 
-public class VMChar extends VMType {
+public class VMChar extends VMPrimitive {
     private char value;
 
     public VMChar(char value) {
         this.value = value;
     }
 
-    public char getValue() {
+    public char getCharValue() {
         return value;
     }
 

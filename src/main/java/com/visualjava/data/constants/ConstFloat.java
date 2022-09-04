@@ -8,13 +8,14 @@ import java.io.IOException;
 public class ConstFloat extends Constant implements LoadableConst {
     private final float value;
 
-    private ConstFloat(float value) {
+    private ConstFloat(ConstantPool pool, float value) {
+        super(pool);
         this.value = value;
     }
 
     public static void read(DataInputStream dis, ConstantPool.ConstPoolBuilder poolBuilder) throws IOException {
         float value = dis.readFloat();
-        poolBuilder.submitConstant(new ConstFloat(value));
+        poolBuilder.submitConstant(new ConstFloat(poolBuilder.getConstPool(), value));
     }
 
     public float getValue() {

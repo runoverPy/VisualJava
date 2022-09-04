@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="653.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.ThreadController">
+
+    <children>
+        <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="180.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <content>
+                <AnchorPane prefHeight="664.0" prefWidth="598.0">
+                    <children>
+                        <AnchorPane layoutX="9.0" layoutY="44.0" prefHeight="73.0" prefWidth="452.0" style="-fx-border-color: #9f9f9f;" AnchorPane.leftAnchor="9.0" AnchorPane.rightAnchor="10.0">
+                            <children>
+                                <TextField fx:id="cycleFreqField" layoutX="272.0" layoutY="40.0" onAction="#acceptNewFrequencyValue" promptText="Cycle Frequency" text="4" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="40.0" />
+                                <Label layoutX="144.0" layoutY="49.0" text="Cycle Frequency" AnchorPane.rightAnchor="191.0" AnchorPane.topAnchor="42.0">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <ButtonBar layoutX="195.0" layoutY="9.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
+                                    <buttons>
+                                        <ToggleButton mnemonicParsing="false" text="Pause Thread" />
+                                        <Button id="kill-button" mnemonicParsing="false" onAction="#killThread" style="-fx-background-color: rgb(222,58,58); -fx-background-color: linear-gradient(to top, #a4052d 0%, #b30825 50%, #dd1111 100%);" styleClass=".button" text="Kill Thread" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="13.0" />
+                                            </font>
+                                        </Button>
+                                    </buttons>
+                                </ButtonBar>
+                            </children>
+                        </AnchorPane>
+                        <Label fx:id="threadName" layoutX="14.0" layoutY="8.0" prefHeight="27.0" text="Thread &quot;main&quot;" textAlignment="CENTER" textFill="#9f9f9f" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="8.0">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <Accordion layoutX="20.0" layoutY="117.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="140.0">
+                     <panes>
+                                <TitledPane animated="false" text="Thread Variables" />
+                                <TitledPane animated="false" prefHeight="484.0" prefWidth="431.0" text="ThreadStack">
+                                    <content>
+                                        <AnchorPane />
+                                    </content>
+                                </TitledPane>
+                     </panes></Accordion>
+                  <Label layoutX="524.0" layoutY="14.0" prefHeight="27.0" text="daemon: false" textFill="#9f9f9f" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                    </children>
+                </AnchorPane>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

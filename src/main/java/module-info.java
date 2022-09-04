@@ -2,17 +2,22 @@ module com.visualjava {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
+    requires javafx.swing;
 
     requires org.controlsfx.controls;
-    requires validatorfx;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
 
-    opens com.visualjava to javafx.fxml;
+    requires jdk.unsupported;
+    requires java.instrument;
+
     exports com.visualjava;
     exports com.visualjava.parser;
     exports com.visualjava.data;
     exports com.visualjava.vm;
-    opens com.visualjava.vm to javafx.fxml;
     exports com.visualjava.data.constants;
+    exports com.visualjava.data.attributes;
+    exports com.visualjava.ui;
+
+    opens com.visualjava.ui to javafx.fxml;
 }

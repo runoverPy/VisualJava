@@ -6,24 +6,29 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ConstString extends Constant implements LoadableConst {
-    private final ConstUTF8 string;
+    private final int string_index;
 
-    private ConstString(ConstUTF8 string) {
-        this.string = string;
+    private ConstString(ConstantPool pool, int string_index) {
+        super(pool);
+        this.string_index = string_index;
     }
 
     public static void read(DataInputStream dis, ConstantPool.ConstPoolBuilder poolBuilder) throws IOException {
         int string_index = dis.readUnsignedShort();
-        ConstUTF8 string = poolBuilder.getConstPool().getConstant(string_index, ConstUTF8.class);
-        poolBuilder.submitConstant(new ConstString(string));
+        poolBuilder.submitConstant(new ConstString(poolBuilder.getConstPool(), string_index));
     }
 
     public String getString() {
-        return string.getValue();
+        return getPool().getConstant(string_index, ConstUTF8.class).getValue();
     }
 
     @Override
     public VMReference load() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ": \"" + getString() + "\"";
     }
 }

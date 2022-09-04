@@ -1,32 +1,31 @@
 package com.visualjava;
 
 import com.visualjava.data.LookupSwitchInstruction;
+import com.visualjava.data.constants.*;
 import com.visualjava.types.*;
 import com.visualjava.vm.VMFrame;
-import com.visualjava.vm.VMThread;
+import com.visualjava.vm.VMStack;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-public class AbstractExecutor {
+public class Executor {
     private final InstructionExecutor instructionExecutor;
 
-    public AbstractExecutor() {
+    public Executor() {
         this.instructionExecutor = new InstructionExecutor();
     }
 
     public final void execute(ExecutionContext context) {
         try {
-
-            Method opcodeImpl = instructionExecutor.getClass().getDeclaredMethod(
+            instructionExecutor.getClass().getDeclaredMethod(
                     "impl_" + context.getInstr().getMnemonic(),
                     ExecutionContext.class
-            );
-            opcodeImpl.invoke(instructionExecutor, context);
+            ).invoke(instructionExecutor, context);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -120,17 +119,29 @@ public class AbstractExecutor {
 
         @Override
         public void impl_ldc(ExecutionContext context) {
-
+            int index = context.getInstr().getParam("index", int.class);
+            LoadableConst constValue = (LoadableConst) context.getPool().getConstant(index);
+            assert !(constValue instanceof ConstLong || constValue instanceof ConstDouble);
+            VMType value = constValue.load();
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_ldc_w(ExecutionContext context) {
-
+            int index = context.getInstr().getParam("index", int.class);
+            LoadableConst constValue = (LoadableConst) context.getPool().getConstant(index);
+            assert !(constValue instanceof ConstLong || constValue instanceof ConstDouble);
+            VMType value = constValue.load();
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_ldc2_w(ExecutionContext context) {
-
+            int index = context.getInstr().getParam("index", int.class);
+            LoadableConst constValue = (LoadableConst) context.getPool().getConstant(index);
+            assert !(constValue instanceof ConstInt || constValue instanceof ConstFloat);
+            VMType value = constValue.load();
+            context.getFrame().pshStack(value);
         }
 
         @Override
@@ -315,42 +326,74 @@ public class AbstractExecutor {
 
         @Override
         public void impl_iaload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMInt;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_laload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMLong;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_faload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMFloat;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_daload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMDouble;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_aaload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMReference;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_baload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMByte;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_caload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMChar;
+            context.getFrame().pshStack(value);
         }
 
         @Override
         public void impl_saload(ExecutionContext context) {
-
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            VMType value = context.getMemory().getArrayField(arrayRef, index.getValue());
+            assert value instanceof VMShort;
+            context.getFrame().pshStack(value);
         }
 
         @Override
@@ -358,7 +401,7 @@ public class AbstractExecutor {
             int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.getFrame().popStack();
             assert value instanceof VMInt;
-            context.getFrame().setLocal(index, value);
+            context.getFrame().putLocal(index, value);
         }
 
         @Override
@@ -366,7 +409,7 @@ public class AbstractExecutor {
             int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.getFrame().popStack();
             assert value instanceof VMLong;
-            context.getFrame().setLocal(index, value);
+            context.getFrame().putLocal(index, value);
         }
 
         @Override
@@ -374,7 +417,7 @@ public class AbstractExecutor {
             int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.getFrame().popStack();
             assert value instanceof VMFloat;
-            context.getFrame().setLocal(index, value);
+            context.getFrame().putLocal(index, value);
         }
 
         @Override
@@ -382,7 +425,7 @@ public class AbstractExecutor {
             int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.getFrame().popStack();
             assert value instanceof VMDouble;
-            context.getFrame().setLocal(index, value);
+            context.getFrame().putLocal(index, value);
         }
 
         @Override
@@ -390,187 +433,219 @@ public class AbstractExecutor {
             int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.getFrame().popStack();
             assert value instanceof VMReference;
-            context.getFrame().setLocal(index, value);
+            context.getFrame().putLocal(index, value);
         }
 
         @Override
         public void impl_istore_0(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMInt;
-            context.getFrame().setLocal(0, value);
+            context.getFrame().putLocal(0, value);
         }
 
         @Override
         public void impl_istore_1(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMInt;
-            context.getFrame().setLocal(1, value);
+            context.getFrame().putLocal(1, value);
         }
 
         @Override
         public void impl_istore_2(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMInt;
-            context.getFrame().setLocal(2, value);
+            context.getFrame().putLocal(2, value);
         }
 
         @Override
         public void impl_istore_3(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMInt;
-            context.getFrame().setLocal(3, value);
+            context.getFrame().putLocal(3, value);
         }
 
         @Override
         public void impl_lstore_0(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMLong;
-            context.getFrame().setLocal(0, value);
+            context.getFrame().putLocal(0, value);
         }
 
         @Override
         public void impl_lstore_1(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMLong;
-            context.getFrame().setLocal(1, value);
+            context.getFrame().putLocal(1, value);
         }
 
         @Override
         public void impl_lstore_2(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMLong;
-            context.getFrame().setLocal(2, value);
+            context.getFrame().putLocal(2, value);
         }
 
         @Override
         public void impl_lstore_3(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMLong;
-            context.getFrame().setLocal(3, value);
+            context.getFrame().putLocal(3, value);
         }
 
         @Override
         public void impl_fstore_0(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMFloat;
-            context.getFrame().setLocal(0, value);
+            context.getFrame().putLocal(0, value);
         }
 
         @Override
         public void impl_fstore_1(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMFloat;
-            context.getFrame().setLocal(1, value);
+            context.getFrame().putLocal(1, value);
         }
 
         @Override
         public void impl_fstore_2(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMFloat;
-            context.getFrame().setLocal(2, value);
+            context.getFrame().putLocal(2, value);
         }
 
         @Override
         public void impl_fstore_3(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMFloat;
-            context.getFrame().setLocal(3, value);
+            context.getFrame().putLocal(3, value);
         }
 
         @Override
         public void impl_dstore_0(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMDouble;
-            context.getFrame().setLocal(0, value);
+            context.getFrame().putLocal(0, value);
         }
 
         @Override
         public void impl_dstore_1(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMDouble;
-            context.getFrame().setLocal(1, value);
+            context.getFrame().putLocal(1, value);
         }
 
         @Override
         public void impl_dstore_2(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMDouble;
-            context.getFrame().setLocal(2, value);
+            context.getFrame().putLocal(2, value);
         }
 
         @Override
         public void impl_dstore_3(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMDouble;
-            context.getFrame().setLocal(3, value);
+            context.getFrame().putLocal(3, value);
         }
 
         @Override
         public void impl_astore_0(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMReference;
-            context.getFrame().setLocal(0, value);
+            context.getFrame().putLocal(0, value);
         }
 
         @Override
         public void impl_astore_1(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMReference;
-            context.getFrame().setLocal(1, value);
+            context.getFrame().putLocal(1, value);
         }
 
         @Override
         public void impl_astore_2(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMReference;
-            context.getFrame().setLocal(2, value);
+            context.getFrame().putLocal(2, value);
         }
 
         @Override
         public void impl_astore_3(ExecutionContext context) {
             VMType value = context.getFrame().popStack();
             assert value instanceof VMReference;
-            context.getFrame().setLocal(3, value);
+            context.getFrame().putLocal(3, value);
         }
 
         @Override
         public void impl_iastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMInt;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_lastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMLong;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_fastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMFloat;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_dastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMDouble;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_aastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMReference;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_bastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMByte;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_castore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMChar;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
         public void impl_sastore(ExecutionContext context) {
-
+            VMType value = context.getFrame().popStack();
+            assert value instanceof VMShort;
+            VMInt index = context.getFrame().popStack(VMInt.class);
+            VMArrayReference arrayRef = context.getFrame().popStack(VMArrayReference.class);
+            context.getMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -581,7 +656,8 @@ public class AbstractExecutor {
         @Override
         public void impl_pop2(ExecutionContext context) {
             VMType value1 = context.getFrame().popStack();
-            if (value1.getCompType() == 1) context.getFrame().popStack();
+            if (value1.getCompType() == 1)
+                context.getFrame().popStack();
         }
 
         @Override
@@ -971,7 +1047,7 @@ public class AbstractExecutor {
             int incrv = context.getInstr().getParam("const", Integer.class);
             VMInt value = context.getFrame().getLocal(index, VMInt.class);
             value = new VMInt(value.getValue() + incrv);
-            context.getFrame().setLocal(index, value);
+            context.getFrame().putLocal(index, value);
         }
 
         @Override
@@ -1429,12 +1505,18 @@ public class AbstractExecutor {
 
         @Override
         public void impl_checkcast(ExecutionContext context) {
+            VMReference objectRef = context.getFrame().popStack(VMArrayReference.class);
 
         }
 
         @Override
         public void impl_instanceof(ExecutionContext context) {
-
+            VMReference objectRef = context.getFrame().popStack(VMArrayReference.class);
+            int index = context.getInstr().getParam("index", int.class);
+            ConstClass objectType = context.getPool().getConstant(index, ConstClass.class);
+            VMInt result = context.getMemory().isInstance(objectRef, objectType) ?
+              new VMInt(1) : new VMInt(0);
+            context.getFrame().pshStack(result);
         }
 
         @Override
@@ -1480,27 +1562,27 @@ public class AbstractExecutor {
                 case 0x36 -> {
                     VMType value = context.getFrame().popStack();
                     assert value instanceof VMInt;
-                    context.getFrame().setLocal(index, value);
+                    context.getFrame().putLocal(index, value);
                 }
                 case 0x37 -> {
                     VMType value = context.getFrame().popStack();
                     assert value instanceof VMLong;
-                    context.getFrame().setLocal(index, value);
+                    context.getFrame().putLocal(index, value);
                 }
                 case 0x38 -> {
                     VMType value = context.getFrame().popStack();
                     assert value instanceof VMFloat;
-                    context.getFrame().setLocal(index, value);
+                    context.getFrame().putLocal(index, value);
                 }
                 case 0x39 -> {
                     VMType value = context.getFrame().popStack();
                     assert value instanceof VMDouble;
-                    context.getFrame().setLocal(index, value);
+                    context.getFrame().putLocal(index, value);
                 }
                 case 0x3a -> {
                     VMType value = context.getFrame().popStack();
                     assert value instanceof VMReference;
-                    context.getFrame().setLocal(index, value);
+                    context.getFrame().putLocal(index, value);
                 }
                 case 0xa9 -> {  // ret
                     VMReturnAddress address = context.getFrame().getLocal(index, VMReturnAddress.class);
@@ -1510,7 +1592,7 @@ public class AbstractExecutor {
                     int inc_val = context.getInstr().getParam("const", Integer.class);
                     VMInt value = context.getFrame().getLocal(index, VMInt.class);
                     value = new VMInt(value.getValue() + inc_val);
-                    context.getFrame().setLocal(index, value);
+                    context.getFrame().putLocal(index, value);
                 }
             }
         }

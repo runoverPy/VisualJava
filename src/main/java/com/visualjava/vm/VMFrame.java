@@ -2,6 +2,7 @@ package com.visualjava.vm;
 
 import com.visualjava.CodeLineMapper;
 import com.visualjava.ExceptionMapper;
+import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 
 import java.util.Stack;
@@ -14,6 +15,7 @@ public class VMFrame {
     private final ExceptionMapper excMapper;
 
     private Throwable currentThrowable = null;
+    private boolean holdsThrowable;
 
     private VMType[] locals;
     private Stack<VMType> stack;
@@ -36,26 +38,27 @@ public class VMFrame {
                 this.declaringClass,
                 this.methodName,
                 this.fileName,
-                lineMapper.getPCLineNumber()
+                lineMapper.getPCLineNumber(pc)
         );
     }
 
-    public void checkForException() {
+    public void checkForThrowable() {
         if (currentThrowable != null) {
             Integer handlerPC = excMapper.getHandlerPC(pc);
             if (handlerPC != null) {
                 setPC(handlerPC);
                 currentThrowable = null;
             } else {
-                // pop frame, propagate throwable
+                VMReference throwable = popStack(VMReference.class);
             }
         }
-
     }
 
-    public boolean setThrowable(Throwable throwable) {
-        if (this.currentThrowable == null) {
-            this.currentThrowable = throwable;
+    public boolean setThrowable(VMReference throwable) {
+        if (!holdsThrowable) {
+            holdsThrowable = true;
+            emptyStack();
+            pshStack(throwable);
             return true;
         } else return false;
     }
@@ -76,7 +79,7 @@ public class VMFrame {
         return (T) popStack();
     }
 
-    public void setLocal(int index, VMType value) {
+    public void putLocal(int index, VMType value) {
         locals[index] = value;
     }
 

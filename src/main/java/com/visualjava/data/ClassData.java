@@ -1,12 +1,16 @@
 package com.visualjava.data;
 
+import com.visualjava.data.attributes.Attribute;
+import com.visualjava.data.constants.ConstUTF8;
 import com.visualjava.data.constants.Constant;
 import com.visualjava.data.constants.ConstantPool;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 public class ClassData {
@@ -56,17 +60,37 @@ public class ClassData {
 
     @Override
     public String toString() {
+        StringBuilder methodsString = new StringBuilder();
+        if (methods.isEmpty()) methodsString.append("[]");
+        else {
+            methodsString.append("[\n");
+            for (Method method : methods) {
+                methodsString.append(method.toString(2)).append(",\n");
+            }
+            methodsString.append("\t]");
+        }
+
+        StringBuilder attribString = new StringBuilder();
+        if (attributes.isEmpty()) attribString.append("[]");
+        else {
+            attribString.append("[\n");
+            for (Attribute attrib : attributes) {
+                attribString.append("\t".repeat(2)).append(attrib.toString(2, false)).append(",\n");
+            }
+            attribString.append("\t]");
+        }
+
         return "ClassData {\n" +
-                "\tversion_minor=" + version_minor + ",\n" +
-                "\tversion_major=" + version_major + ",\n" +
-                "\tconstant_pool=" + constant_pool + ",\n" +
-                "\taccess_flags=" + access_flags + ",\n" +
-                "\tclass_name=" + class_name + ",\n" +
-                "\tsuper_name=" + super_name + ",\n" +
-                "\tinterfaces=" + interfaces + ",\n" +
-                "\tfields=" + fields + ",\n" +
-                "\tmethods=" + methods + ",\n" +
-                "\tattributes=" + attributes + "\n" +
+                "\tversion_minor: " + version_minor + ",\n" +
+                "\tversion_major: " + version_major + ",\n" +
+                "\tconstant_pool: " + constant_pool.toString(1) + ",\n" +
+                "\taccess_flags: " + access_flags + ",\n" +
+                "\tclass_name: " + class_name + ",\n" +
+                "\tsuper_name: " + super_name + ",\n" +
+                "\tinterfaces: " + interfaces + ",\n" +
+                "\tfields: " + fields + ",\n" +
+                "\tmethods: " + methodsString + ",\n" +
+                "\tattributes: " + attribString + "\n" +
                 '}';
     }
 
@@ -76,6 +100,10 @@ public class ClassData {
             if (stream == null) throw new IOException();
             ClassData classData = ClassData.read(new DataInputStream(stream));
             System.out.println(classData);
+
+            assert classData != null;
+            String wierd = classData.constant_pool.getConstant(44, ConstUTF8.class).getValue();
+            System.out.println(Arrays.toString(wierd.getBytes(StandardCharsets.UTF_8)));
         } catch (IOException ioe) {
             System.out.println("The file does not exist!");
             System.exit(1);

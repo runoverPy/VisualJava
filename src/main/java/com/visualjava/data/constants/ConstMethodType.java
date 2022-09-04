@@ -6,20 +6,20 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ConstMethodType extends Constant implements LoadableConst {
-    private final ConstUTF8 desc;
+    private final int descIndex;
 
-    private ConstMethodType(ConstUTF8 desc) {
-        this.desc = desc;
+    private ConstMethodType(ConstantPool pool, int descIndex) {
+        super(pool);
+        this.descIndex = descIndex;
     }
 
     public static void read(DataInputStream dis, ConstantPool.ConstPoolBuilder poolBuilder) throws IOException {
         int desc_index = dis.readUnsignedShort();
-        ConstUTF8 desc = poolBuilder.getConstPool().getConstant(desc_index, ConstUTF8.class);
-        poolBuilder.submitConstant(new ConstMethodType(desc));
+        poolBuilder.submitConstant(new ConstMethodType(poolBuilder.getConstPool(), desc_index));
     }
 
-    public String getDesc() {
-        return desc.getValue();
+    public ConstUTF8 getDesc() {
+        return getPool().getConstant(descIndex, ConstUTF8.class);
     }
 
     @Override

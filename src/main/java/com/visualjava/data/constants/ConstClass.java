@@ -3,27 +3,33 @@ package com.visualjava.data.constants;
 import com.visualjava.types.VMReference;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 
 public class ConstClass extends Constant implements LoadableConst {
-    private final ConstUTF8 name;
+    private final int name_index;
 
-    private ConstClass(ConstUTF8 name) {
-        this.name = name;
+    private ConstClass(ConstantPool pool, int name_index) {
+        super(pool);
+        this.name_index = name_index;
     }
 
     public static void read(DataInputStream dis, ConstantPool.ConstPoolBuilder poolBuilder) throws IOException {
         int name_index = dis.readUnsignedShort();
-        ConstUTF8 name = poolBuilder.getConstPool().getConstant(name_index, ConstUTF8.class);
-        poolBuilder.submitConstant(new ConstClass(name));
+        poolBuilder.submitConstant(new ConstClass(poolBuilder.getConstPool(), name_index));
     }
 
-    public String getName() {
-        return name.getValue();
+    public ConstUTF8 getName() {
+        return getPool().getConstant(name_index, ConstUTF8.class);
     }
 
     @Override
     public VMReference load() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return getName().getValue();
     }
 }

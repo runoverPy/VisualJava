@@ -5,18 +5,18 @@ import java.io.IOException;
 
 public class ConstInvokeDynamic extends Constant {
     private final int bootstrap_method_attr_index;
-    private final ConstNameType nameType;
+    private final int nameTypeIndex;
 
-    private ConstInvokeDynamic(int bootstrap_method_attr_index, ConstNameType nameType) {
+    private ConstInvokeDynamic(ConstantPool pool, int bootstrap_method_attr_index, int nameTypeIndex) {
+        super(pool);
         this.bootstrap_method_attr_index = bootstrap_method_attr_index;
-        this.nameType = nameType;
+        this.nameTypeIndex = nameTypeIndex;
     }
 
     public static void read(DataInputStream dis, ConstantPool.ConstPoolBuilder poolBuilder) throws IOException {
         int bmai = dis.readUnsignedShort();
         int nameTypeIndex = dis.readUnsignedShort();
-        ConstNameType nameType = poolBuilder.getConstPool().getConstant(nameTypeIndex, ConstNameType.class);
-        poolBuilder.submitConstant(new ConstInvokeDynamic(bmai, nameType));
+        poolBuilder.submitConstant(new ConstInvokeDynamic(poolBuilder.getConstPool(), bmai, nameTypeIndex));
     }
 
     public int getBMAI() {
@@ -24,6 +24,6 @@ public class ConstInvokeDynamic extends Constant {
     }
 
     public ConstNameType getNameType() {
-        return nameType;
+        return getPool().getConstant(nameTypeIndex, ConstNameType.class);
     }
 }

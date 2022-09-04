@@ -1,65 +1,29 @@
 package com.visualjava.vm;
 
 import com.visualjava.data.constants.ConstClass;
+import com.visualjava.types.VMArrayReference;
+import com.visualjava.types.VMObjectReference;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 
-import java.lang.ref.PhantomReference;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.util.*;
+public interface VMMemory {
+    void collect();
 
-public class VMMemory {
-    private final Map<PhantomReference<VMReference>, Integer> activeReferences;
+    VMType load(Object object) throws IllegalAccessException;
 
-    public VMMemory(long size) {
-        activeReferences = new HashMap<>();
-    }
+    VMObjectReference newObject(ConstClass constClass);
 
-    public void collect() {
-        List<PhantomReference<VMReference>> dealloc = new LinkedList<>();
-        for (Map.Entry<PhantomReference<VMReference>, Integer> entry : activeReferences.entrySet()) {
-            PhantomReference<VMReference> reference = entry.getKey();
-            if (reference.refersTo(null)) dealloc.add(reference);
-        }
-        for (PhantomReference<VMReference> phantomReference : dealloc)
-            activeReferences.remove(phantomReference);
-    }
+    VMArrayReference newArray(ConstClass constClass);
 
-    public VMType load(Object object) {
-        Class<?> objectClass = object.getClass();
-        if (objectClass.isPrimitive()) {
+    void putField(VMReference reference, VMType value);
 
-        } else {
-            VMReference objectRef = newObject(null);
-            Field[] objectFields = objectClass.getFields();
-            for (Field field : objectFields) {
+    VMType getField(VMReference objectRef);
 
-            }
-        }
-    }
+    boolean isInstance(VMReference objectRef, ConstClass type);
 
-    public VMReference newObject(ConstClass constClass) {
+    VMType getArrayField(VMArrayReference arrayRef, int index);
 
-    }
+    <T extends VMType> T getArrayField(VMArrayReference arrayRef, int index, Class<T> _class);
 
-    public void putField(VMReference reference, VMType value) {}
-
-    private class MemObject {
-        private final String type;
-        private final Map<String, VMType> fields;
-
-        public MemObject(String type) {
-            this.type = type;
-            this.fields = new HashMap<>();
-        }
-
-        public VMType getField(String field) {
-            return fields.get(field);
-        }
-
-        public void putField(String field, VMType value) {
-            fields.put(field, value);
-        }
-    }
+    void putArrayField(VMArrayReference arrayRef, int index, VMType value);
 }
