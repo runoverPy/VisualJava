@@ -32,6 +32,17 @@ public class VisualJavaController {
     public SwingNode terminalCase;
     private JTextPane terminalPane;
 
+    private static VisualJavaController instance;
+
+    public static VisualJavaController getInstance() {
+        return instance;
+    }
+
+    public VisualJavaController() throws InstantiationException {
+        if (instance == null) instance = this;
+        else throw new InstantiationException("Singleton Instance already created");
+    }
+
     public void initialize() {
         terminalPane = new JTextPane();
         terminalPane.setEditable(false);

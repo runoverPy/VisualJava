@@ -14,6 +14,8 @@ public class VMFrame {
     private final CodeLineMapper lineMapper;
     private final ExceptionMapper excMapper;
 
+    private final VMMethod method;
+
     private Throwable currentThrowable = null;
     private boolean holdsThrowable;
 
@@ -22,15 +24,16 @@ public class VMFrame {
 
     private int pc = 0;
 
-    VMFrame(final VMType[] params, final int maxLocals, final int maxStack) {
-        locals = new VMType[maxLocals];
+    VMFrame(VMMethod method, VMType[] params) {
+        locals = new VMType[method.getMaxLocals()];
         System.arraycopy(params, 0, locals, 0, params.length);
         stack = new Stack<>();
-        this.declaringClass = "";
-        this.methodName = "";
-        this.fileName = "";
-        this.lineMapper = null;
-        this.excMapper = null;
+        this.method = method;
+        this.declaringClass = method.getDeclaringClass();
+        this.methodName = method.getMethodName();
+        this.fileName = method.getClassFileName();
+        this.lineMapper = new CodeLineMapper(method.getLineNumberTable());
+        this.excMapper = new ExceptionMapper(method.getExceptionInfo());
     }
 
     public StackTraceElement getStackTraceElement() {
@@ -41,6 +44,8 @@ public class VMFrame {
                 lineMapper.getPCLineNumber(pc)
         );
     }
+
+
 
     public void checkForThrowable() {
         if (currentThrowable != null) {
