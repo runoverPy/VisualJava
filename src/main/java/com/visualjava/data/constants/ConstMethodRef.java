@@ -7,7 +7,7 @@ public class ConstMethodRef extends Constant {
     private final int classIndex;
     private final int nameTypeIndex;
 
-    private ConstMethodRef(ConstantPool pool, int classIndex, int nameTypeIndex) {
+    protected ConstMethodRef(ConstantPool pool, int classIndex, int nameTypeIndex) {
         super(pool);
         this.classIndex = classIndex;
         this.nameTypeIndex = nameTypeIndex;

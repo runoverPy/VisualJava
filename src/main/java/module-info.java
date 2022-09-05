@@ -7,6 +7,7 @@ module com.visualjava {
     requires org.controlsfx.controls;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires org.json;
 
     requires jdk.unsupported;
     requires java.instrument;

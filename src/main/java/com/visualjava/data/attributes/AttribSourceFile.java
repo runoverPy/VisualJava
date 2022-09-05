@@ -19,4 +19,8 @@ public class AttribSourceFile extends Attribute {
         sourceFile.sourceFile = classData.resolveConstPoolIndex(sourceFileIndex, ConstUTF8.class);
         return sourceFile;
     }
+
+    public ConstUTF8 getSourceFile() {
+        return sourceFile;
+    }
 }

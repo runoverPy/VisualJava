@@ -22,10 +22,29 @@ public class AttribCode extends Attribute {
         AttribCode code = new AttribCode(classData);
         code.max_stack = dis.readUnsignedShort();
         code.max_locals = dis.readUnsignedShort();
-        code.bytecode = new byte[dis.readInt()];
-        dis.read(code.bytecode);
+        code.bytecode = dis.readNBytes(dis.readInt());
         code.exc_table = ExceptionInfo.readExceptions(classData, dis, dis.readUnsignedShort());
         code.attributes = Attribute.readAttributes(classData, dis, dis.readUnsignedShort());
         return code;
+    }
+
+    public int getStackSize() {
+        return max_stack;
+    }
+
+    public int getMaxLocals() {
+        return max_locals;
+    }
+
+    public byte[] getBytecode() {
+        return bytecode;
+    }
+
+    public List<ExceptionInfo> getExcTable() {
+        return exc_table;
+    }
+
+    public List<Attribute> getAttributes() {
+        return attributes;
     }
 }

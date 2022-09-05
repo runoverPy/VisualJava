@@ -1,16 +1,16 @@
 package com.visualjava.data;
 
+import com.visualjava.data.attributes.AttribSourceFile;
 import com.visualjava.data.attributes.Attribute;
-import com.visualjava.data.constants.ConstUTF8;
+import com.visualjava.data.constants.ConstClass;
 import com.visualjava.data.constants.Constant;
 import com.visualjava.data.constants.ConstantPool;
+import com.visualjava.vm.VMMethod;
+import com.visualjava.vm.VMMethodPool;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 public class ClassData {
@@ -50,6 +50,10 @@ public class ClassData {
         }
     }
 
+    public ConstantPool getConstPool() {
+        return constant_pool;
+    }
+
     public Constant resolveConstPoolIndex(int index) {
         return constant_pool.getConstant(index);
     }
@@ -85,8 +89,8 @@ public class ClassData {
                 "\tversion_major: " + version_major + ",\n" +
                 "\tconstant_pool: " + constant_pool.toString(1) + ",\n" +
                 "\taccess_flags: " + access_flags + ",\n" +
-                "\tclass_name: " + class_name + ",\n" +
-                "\tsuper_name: " + super_name + ",\n" +
+                "\tclass_name: " + getClassName() + ",\n" +
+                "\tsuper_name: " + getSuperName() + ",\n" +
                 "\tinterfaces: " + interfaces + ",\n" +
                 "\tfields: " + fields + ",\n" +
                 "\tmethods: " + methodsString + ",\n" +
@@ -94,19 +98,50 @@ public class ClassData {
                 '}';
     }
 
-    public static void main(String[] args) {
-        System.out.println(ClassData.class.getResource("/com/visualjava/Fibonacci.cls"));
-        try (InputStream stream = ClassData.class.getResourceAsStream("/com/visualjava/Fibonacci.cls")) {
-            if (stream == null) throw new IOException();
-            ClassData classData = ClassData.read(new DataInputStream(stream));
-            System.out.println(classData);
+    public int getVersionMinor() {
+        return version_minor;
+    }
 
-            assert classData != null;
-            String wierd = classData.constant_pool.getConstant(44, ConstUTF8.class).getValue();
-            System.out.println(Arrays.toString(wierd.getBytes(StandardCharsets.UTF_8)));
-        } catch (IOException ioe) {
-            System.out.println("The file does not exist!");
-            System.exit(1);
+    public int getVersionMajor() {
+        return version_major;
+    }
+
+    public ConstantPool getConstantPool() {
+        return constant_pool;
+    }
+
+    public int getAccessFlags() {
+        return access_flags;
+    }
+
+    public String getClassName() {
+        return resolveConstPoolIndex(class_name, ConstClass.class).toString();
+    }
+
+    public String getSuperName() {
+        return resolveConstPoolIndex(super_name, ConstClass.class).toString();
+    }
+
+    public String getClassFileName() {
+        for (Attribute attribute : attributes) {
+            if (attribute instanceof AttribSourceFile) return ((AttribSourceFile) attribute).getSourceFile().getValue();
         }
+        return "";
+    }
+
+    public List<Interface> getInterfaces() {
+        return interfaces;
+    }
+
+    public List<Field> getFields() {
+        return fields;
+    }
+
+    public List<Method> getMethods() {
+        return methods;
+    }
+
+    public List<Attribute> getAttributes() {
+        return attributes;
     }
 }

@@ -4,6 +4,7 @@ import com.visualjava.data.ClassData;
 import com.visualjava.data.constants.ConstUTF8;
 
 import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -28,15 +29,18 @@ public class VMClassLoader {
     }
 
     public void loadClass(String className) {
-        Path absolutePathToClass = VMRuntime.getClassPath().resolve(className);
-        try (InputStream stream = ClassData.class.getResourceAsStream(String.valueOf(absolutePathToClass))) {
-            if (stream == null) throw new IOException();
+        Path absolutePathToClass = VMRuntime.getClassPath().resolve(className + ".class");
+        try (InputStream stream = new FileInputStream(String.valueOf(absolutePathToClass))) {
             ClassData classData = ClassData.read(new DataInputStream(stream));
             loadedClasses.put(className, classData);
             informClassLoadListeners(classData);
         } catch (IOException ioe) {
             System.out.println("The file does not exist!");
         }
+    }
+
+    public ClassData getLoadedClassOrNull(String className) {
+        return loadedClasses.getOrDefault(className, null);
     }
 
     private void informClassLoadListeners(ClassData classData) {

@@ -15,4 +15,9 @@ public class VMInt extends VMPrimitive {
     public int getCompType() {
         return 1;
     }
+
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
 }

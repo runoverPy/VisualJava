@@ -7,7 +7,6 @@ public class VMStack {
 
     public VMStack() {
         this.frameStack = new Stack<>();
-        Thread.dumpStack();
     }
 
     private static StackTraceElement[] getStackTrace(Stack<VMFrame> stack, int depth) {
@@ -21,6 +20,10 @@ public class VMStack {
             stack.push(curFrame);
             return output;
         }
+    }
+
+    public boolean isComplete() {
+        return frameStack.empty();
     }
 
     public void pushFrame(VMFrame frame) {

@@ -22,7 +22,6 @@ public final class ConstantPool {
         int constCount = inputStream.readUnsignedShort();
         while (builder.getIndex() < constCount) {
             int tag = dis.readUnsignedByte();
-            if (builder.index == 37) System.out.println("Spoilers its " + tag);
             switch (tag) {
                 case  1 -> ConstUTF8.read(dis, builder);
                 case  3 -> ConstInt.read(dis, builder);

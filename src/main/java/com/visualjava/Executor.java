@@ -1,9 +1,8 @@
 package com.visualjava;
 
-import com.visualjava.data.LookupSwitchInstruction;
 import com.visualjava.data.constants.*;
 import com.visualjava.types.*;
-import com.visualjava.vm.VMFrame;
+import com.visualjava.vm.VMMethod;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -18,12 +17,19 @@ public class Executor {
 
     public final void execute(ExecutionContext context) {
         try {
+            System.out.println("\t" + context.frame().frameState());
+            System.out.println("executing [" + context.getInstr().getMnemonic() + "] for " + Thread.currentThread());
             instructionExecutor.getClass().getDeclaredMethod(
-                    "impl_" + context.instr().getMnemonic(),
+                    "impl_" + context.getInstr().getMnemonic(),
                     ExecutionContext.class
             ).invoke(instructionExecutor, context);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new InternalError("Error in instruction lookup. Erroneous instruction mnemonic: " + context.instr().getMnemonic(), e);
+            context.getPCHandler().execute();
+        } catch (NoSuchMethodException e) {
+            throw new InternalError("Error in instruction lookup. Erroneous instruction mnemonic: " + context.getInstr().getMnemonic(), e);
+        } catch (InvocationTargetException e) {
+            throw new InternalError("Error in instruction invocation. Erroneous instruction mnemonic: " + context.getInstr().getMnemonic(), e);
+        } catch (IllegalAccessException e) {
+            throw new InternalError("Error in instruction access. Erroneous instruction mnemonic: " + context.getInstr().getMnemonic(), e);
         }
     }
 
@@ -105,20 +111,20 @@ public class Executor {
 
         @Override
         public void impl_bipush(ExecutionContext context) {
-            byte value = (byte) context.instr().getParam("byte");
+            byte value = (byte) context.getInstr().getParam("byte");
             context.frame().pshStack(new VMByte(value));
         }
 
         @Override
         public void impl_sipush(ExecutionContext context) {
-            short value = (short) context.instr().getParam("short");
+            short value = (short) context.getInstr().getParam("short");
             context.frame().pshStack(new VMShort(value));
         }
 
         @Override
         public void impl_ldc(ExecutionContext context) {
-            int index = context.instr().getParam("index", int.class);
-            LoadableConst constValue = (LoadableConst) context.constPool().getConstant(index);
+            int index = context.getInstr().getParam("index", int.class);
+            LoadableConst constValue = (LoadableConst) context.getConstPool().getConstant(index);
             assert !(constValue instanceof ConstLong || constValue instanceof ConstDouble);
             VMType value = constValue.load();
             context.frame().pshStack(value);
@@ -126,8 +132,8 @@ public class Executor {
 
         @Override
         public void impl_ldc_w(ExecutionContext context) {
-            int index = context.instr().getParam("index", int.class);
-            LoadableConst constValue = (LoadableConst) context.constPool().getConstant(index);
+            int index = context.getInstr().getParam("index", int.class);
+            LoadableConst constValue = (LoadableConst) context.getConstPool().getConstant(index);
             assert !(constValue instanceof ConstLong || constValue instanceof ConstDouble);
             VMType value = constValue.load();
             context.frame().pshStack(value);
@@ -135,8 +141,8 @@ public class Executor {
 
         @Override
         public void impl_ldc2_w(ExecutionContext context) {
-            int index = context.instr().getParam("index", int.class);
-            LoadableConst constValue = (LoadableConst) context.constPool().getConstant(index);
+            int index = context.getInstr().getParam("index", int.class);
+            LoadableConst constValue = (LoadableConst) context.getConstPool().getConstant(index);
             assert !(constValue instanceof ConstInt || constValue instanceof ConstFloat);
             VMType value = constValue.load();
             context.frame().pshStack(value);
@@ -144,7 +150,7 @@ public class Executor {
 
         @Override
         public void impl_iload(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().getLocal(index);
             assert value instanceof VMInt;
             context.frame().pshStack(value);
@@ -152,7 +158,7 @@ public class Executor {
 
         @Override
         public void impl_lload(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().getLocal(index);
             assert value instanceof VMLong;
             context.frame().pshStack(value);
@@ -160,7 +166,7 @@ public class Executor {
 
         @Override
         public void impl_fload(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().getLocal(index);
             assert value instanceof VMFloat;
             context.frame().pshStack(value);
@@ -168,7 +174,7 @@ public class Executor {
 
         @Override
         public void impl_dload(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().getLocal(index);
             assert value instanceof VMDouble;
             context.frame().pshStack(value);
@@ -176,7 +182,7 @@ public class Executor {
 
         @Override
         public void impl_aload(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().getLocal(index);
             assert value instanceof VMReference;
             context.frame().pshStack(value);
@@ -326,7 +332,7 @@ public class Executor {
         public void impl_iaload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMInt;
             context.frame().pshStack(value);
         }
@@ -335,7 +341,7 @@ public class Executor {
         public void impl_laload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMLong;
             context.frame().pshStack(value);
         }
@@ -344,7 +350,7 @@ public class Executor {
         public void impl_faload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMFloat;
             context.frame().pshStack(value);
         }
@@ -353,7 +359,7 @@ public class Executor {
         public void impl_daload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMDouble;
             context.frame().pshStack(value);
         }
@@ -362,7 +368,7 @@ public class Executor {
         public void impl_aaload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMReference;
             context.frame().pshStack(value);
         }
@@ -371,7 +377,7 @@ public class Executor {
         public void impl_baload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMByte;
             context.frame().pshStack(value);
         }
@@ -380,7 +386,7 @@ public class Executor {
         public void impl_caload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMChar;
             context.frame().pshStack(value);
         }
@@ -389,14 +395,14 @@ public class Executor {
         public void impl_saload(ExecutionContext context) {
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            VMType value = context.memory().getArrayField(arrayRef, index.getValue());
+            VMType value = context.getVMMemory().getArrayField(arrayRef, index.getValue());
             assert value instanceof VMShort;
             context.frame().pshStack(value);
         }
 
         @Override
         public void impl_istore(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().popStack();
             assert value instanceof VMInt;
             context.frame().putLocal(index, value);
@@ -404,7 +410,7 @@ public class Executor {
 
         @Override
         public void impl_lstore(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().popStack();
             assert value instanceof VMLong;
             context.frame().putLocal(index, value);
@@ -412,7 +418,7 @@ public class Executor {
 
         @Override
         public void impl_fstore(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().popStack();
             assert value instanceof VMFloat;
             context.frame().putLocal(index, value);
@@ -420,7 +426,7 @@ public class Executor {
 
         @Override
         public void impl_dstore(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().popStack();
             assert value instanceof VMDouble;
             context.frame().putLocal(index, value);
@@ -428,7 +434,7 @@ public class Executor {
 
         @Override
         public void impl_astore(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMType value = context.frame().popStack();
             assert value instanceof VMReference;
             context.frame().putLocal(index, value);
@@ -580,7 +586,7 @@ public class Executor {
             assert value instanceof VMInt;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -589,7 +595,7 @@ public class Executor {
             assert value instanceof VMLong;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -598,7 +604,7 @@ public class Executor {
             assert value instanceof VMFloat;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -607,7 +613,7 @@ public class Executor {
             assert value instanceof VMDouble;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -616,7 +622,7 @@ public class Executor {
             assert value instanceof VMReference;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -625,7 +631,7 @@ public class Executor {
             assert value instanceof VMByte;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -634,7 +640,7 @@ public class Executor {
             assert value instanceof VMChar;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -643,7 +649,7 @@ public class Executor {
             assert value instanceof VMShort;
             VMInt index = context.frame().popStack(VMInt.class);
             VMArrayReference arrayRef = context.frame().popStack(VMArrayReference.class);
-            context.memory().putArrayField(arrayRef, index.getValue(), value);
+            context.getVMMemory().putArrayField(arrayRef, index.getValue(), value);
         }
 
         @Override
@@ -1041,8 +1047,8 @@ public class Executor {
 
         @Override
         public void impl_iinc(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
-            int incrv = context.instr().getParam("const", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
+            int incrv = context.getInstr().getParam("const", Integer.class);
             VMInt value = context.frame().getLocal(index, VMInt.class);
             value = new VMInt(value.getValue() + incrv);
             context.frame().putLocal(index, value);
@@ -1217,127 +1223,127 @@ public class Executor {
         @Override
         public void impl_ifeq(ExecutionContext context) {
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value.getValue() == 0)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ifne(ExecutionContext context) {
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value.getValue() != 0)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_iflt(ExecutionContext context) {
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value.getValue() < 0)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ifge(ExecutionContext context) {
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value.getValue() >= 0)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ifgt(ExecutionContext context) {
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value.getValue() > 0)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ifle(ExecutionContext context) {
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value.getValue() <= 0)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_icmpeq(ExecutionContext context) {
             VMInt value2 = context.frame().popStack(VMInt.class);
             VMInt value1 = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value1.getValue() == value2.getValue())
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_icmpne(ExecutionContext context) {
             VMInt value2 = context.frame().popStack(VMInt.class);
             VMInt value1 = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value1.getValue() != value2.getValue())
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_icmplt(ExecutionContext context) {
             VMInt value2 = context.frame().popStack(VMInt.class);
             VMInt value1 = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value1.getValue() < value2.getValue())
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_icmpge(ExecutionContext context) {
             VMInt value2 = context.frame().popStack(VMInt.class);
             VMInt value1 = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value1.getValue() >= value2.getValue())
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_icmpgt(ExecutionContext context) {
             VMInt value2 = context.frame().popStack(VMInt.class);
             VMInt value1 = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value1.getValue() > value2.getValue())
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_icmple(ExecutionContext context) {
             VMInt value2 = context.frame().popStack(VMInt.class);
             VMInt value1 = context.frame().popStack(VMInt.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (value1.getValue() <= value2.getValue())
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_acmpeq(ExecutionContext context) {
             VMReference value2 = context.frame().popStack(VMReference.class);
             VMReference value1 = context.frame().popStack(VMReference.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (VMReference.refEq(value1, value2))
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_if_acmpne(ExecutionContext context) {
             VMReference value2 = context.frame().popStack(VMReference.class);
             VMReference value1 = context.frame().popStack(VMReference.class);
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             if (!VMReference.refEq(value1, value2))
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_goto(ExecutionContext context) {
-            int branch = context.instr().getParam("branch", Integer.class);
-            context.frame().incPC(branch);
+            int branch = context.getInstr().getParam("branch", Integer.class);
+            context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
@@ -1345,90 +1351,86 @@ public class Executor {
             int address = context.frame().getPC() + 3;
             VMReturnAddress returnAddress = new VMReturnAddress(address);
             context.frame().pshStack(returnAddress);
-            int branch = context.instr().getParam("branch", Integer.class);
-            context.frame().incPC(branch);
+            int branch = context.getInstr().getParam("branch", Integer.class);
+            context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ret(ExecutionContext context) {
-            int index = context.instr().getParam("index", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             VMReturnAddress address = context.frame().getLocal(index, VMReturnAddress.class);
-            context.frame().setPC(address.getAddress());
+            context.getPCHandler().setAbsoluteOffset(address.getAddress());
         }
 
         @Override
         public void impl_tableswitch(ExecutionContext context) {
-            int defaultBranch = context.instr().getParam("default", Integer.class);
-            int low = context.instr().getParam("low", Integer.class);
-            int high = context.instr().getParam("high", Integer.class);
-            List<Integer> offsets = context.instr().getParam("jump_offsets", List.class);
+            int defaultBranch = context.getInstr().getParam("default", Integer.class);
+            int low = context.getInstr().getParam("low", Integer.class);
+            int high = context.getInstr().getParam("high", Integer.class);
+            List<Map<String, Integer>> offsets = context.getInstr().getParam("jump_offsets", List.class);
             VMInt value = context.frame().popStack(VMInt.class);
             int branch;
             if (low <= value.getValue() && value.getValue() <= high) {
-                branch = offsets.get(value.getValue() - low);
+                branch = offsets.get(value.getValue() - low).get("offset");
             } else {
                 branch = defaultBranch;
             }
-            context.frame().incPC(branch);
+            context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_lookupswitch(ExecutionContext context) {
-            int defaultBranch = context.instr().getParam("default", Integer.class);
-            Map<Integer, Integer> matchOffsets = context.getInstr(LookupSwitchInstruction.class).getMatchOffsets();
+            int defaultBranch = context.getInstr().getParam("default", Integer.class);
+            List<Map<String, Integer>> matchOffsets = context.getInstr().getParam("match_offset_pairs", List.class);
             VMInt value = context.frame().popStack(VMInt.class);
-            int branch = matchOffsets.getOrDefault(value.getValue(), defaultBranch);
-            context.frame().incPC(branch);
+            int branch = defaultBranch;
+            for (Map<String, Integer> pair : matchOffsets) {
+                if (pair.get("match") == value.getValue()) {
+                    branch = pair.get("offset");
+                    break;
+                }
+            }
+            context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ireturn(ExecutionContext context) {
-            context.stack().popFrame();
-            VMFrame caller = context.stack().peekFrame();
             VMType returnValue = context.frame().popStack();
             assert returnValue instanceof VMInt;
-            caller.pshStack(returnValue);
+            context.frame().setReturnValue(returnValue);
         }
 
         @Override
         public void impl_lreturn(ExecutionContext context) {
-            context.stack().popFrame();
-            VMFrame caller = context.stack().peekFrame();
             VMType returnValue = context.frame().popStack();
             assert returnValue instanceof VMLong;
-            caller.pshStack(returnValue);
+            context.frame().setReturnValue(returnValue);
         }
 
         @Override
         public void impl_freturn(ExecutionContext context) {
-            context.stack().popFrame();
-            VMFrame caller = context.stack().peekFrame();
             VMType returnValue = context.frame().popStack();
             assert returnValue instanceof VMFloat;
-            caller.pshStack(returnValue);
+            context.frame().setReturnValue(returnValue);
         }
 
         @Override
         public void impl_dreturn(ExecutionContext context) {
-            context.stack().popFrame();
-            VMFrame caller = context.stack().peekFrame();
             VMType returnValue = context.frame().popStack();
             assert returnValue instanceof VMDouble;
-            caller.pshStack(returnValue);
+            context.frame().setReturnValue(returnValue);
         }
 
         @Override
         public void impl_areturn(ExecutionContext context) {
-            context.stack().popFrame();
-            VMFrame caller = context.stack().peekFrame();
             VMType returnValue = context.frame().popStack();
             assert returnValue instanceof VMReference;
-            caller.pshStack(returnValue);
+            context.frame().setReturnValue(returnValue);
         }
 
         @Override
         public void impl_return(ExecutionContext context) {
-            context.stack().popFrame();
+            context.frame().setReturnValue(null);
         }
 
         @Override
@@ -1463,7 +1465,10 @@ public class Executor {
 
         @Override
         public void impl_invokestatic(ExecutionContext context) {
-
+            int index = context.getInstr().getParam("index", Integer.class);
+            ConstMethodRef methodRef = context.getConstPool().getConstant(index, ConstMethodRef.class);
+            VMMethod method = context.getMethodPool().resolve(methodRef);
+            context.frame().setInvokedMethod(method);
         }
 
         @Override
@@ -1510,9 +1515,9 @@ public class Executor {
         @Override
         public void impl_instanceof(ExecutionContext context) {
             VMReference objectRef = context.frame().popStack(VMArrayReference.class);
-            int index = context.instr().getParam("index", int.class);
-            ConstClass objectType = context.constPool().getConstant(index, ConstClass.class);
-            VMInt result = context.memory().isInstance(objectRef, objectType) ?
+            int index = context.getInstr().getParam("index", int.class);
+            ConstClass objectType = context.getConstPool().getConstant(index, ConstClass.class);
+            VMInt result = context.getVMMemory().isInstance(objectRef, objectType) ?
               new VMInt(1) : new VMInt(0);
             context.frame().pshStack(result);
         }
@@ -1529,8 +1534,8 @@ public class Executor {
 
         @Override
         public void impl_wide(ExecutionContext context) {
-            int opcode = context.instr().getParam("opcode", Integer.class);
-            int index = context.instr().getParam("index", Integer.class);
+            int opcode = context.getInstr().getParam("opcode", Integer.class);
+            int index = context.getInstr().getParam("index", Integer.class);
             switch (opcode) {
                 case 0x15 -> {
                     VMType value = context.frame().getLocal(index);
@@ -1584,10 +1589,10 @@ public class Executor {
                 }
                 case 0xa9 -> {  // ret
                     VMReturnAddress address = context.frame().getLocal(index, VMReturnAddress.class);
-                    context.frame().setPC(address.getAddress());
+                    context.getPCHandler().setAbsoluteOffset(address.getAddress());
                 }
                 case 0xc6 -> {  // iinc
-                    int inc_val = context.instr().getParam("const", Integer.class);
+                    int inc_val = context.getInstr().getParam("const", Integer.class);
                     VMInt value = context.frame().getLocal(index, VMInt.class);
                     value = new VMInt(value.getValue() + inc_val);
                     context.frame().putLocal(index, value);
@@ -1602,24 +1607,24 @@ public class Executor {
 
         @Override
         public void impl_ifnull(ExecutionContext context) {
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             VMReference value = context.frame().popStack(VMReference.class);
             if (value instanceof VMNullReference)
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_ifnonnull(ExecutionContext context) {
-            int branch = context.instr().getParam("branch", Integer.class);
+            int branch = context.getInstr().getParam("branch", Integer.class);
             VMReference value = context.frame().popStack(VMReference.class);
             if (!(value instanceof VMNullReference))
-                context.frame().incPC(branch);
+                context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
         public void impl_goto_w(ExecutionContext context) {
-            int branch = context.instr().getParam("branch", Integer.class);
-            context.frame().incPC(branch);
+            int branch = context.getInstr().getParam("branch", Integer.class);
+            context.getPCHandler().setRelativeOffset(branch);
         }
 
         @Override
@@ -1627,8 +1632,8 @@ public class Executor {
             int address = context.frame().getPC() + 3;
             VMReturnAddress returnAddress = new VMReturnAddress(address);
             context.frame().pshStack(returnAddress);
-            int branch = context.instr().getParam("branch", Integer.class);
-            context.frame().incPC(branch);
+            int branch = context.getInstr().getParam("branch", Integer.class);
+            context.getPCHandler().setRelativeOffset(branch);
         }
     }
 }

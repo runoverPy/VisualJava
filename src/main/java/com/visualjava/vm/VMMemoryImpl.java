@@ -12,22 +12,22 @@ import java.util.*;
 import sun.misc.Unsafe;
 
 public class VMMemoryImpl implements VMMemory {
-    private static final Unsafe unsafe;
-
-    static {
-        try {
-            Field theUnsafe = Unsafe.class.getField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            unsafe = (Unsafe) theUnsafe.get(null);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private static final Unsafe unsafe;
+//
+//    static {
+//        try {
+//            Field theUnsafe = Unsafe.class.getField("theUnsafe");
+//            theUnsafe.setAccessible(true);
+//            unsafe = (Unsafe) theUnsafe.get(null);
+//        } catch (NoSuchFieldException | IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private final ReferenceQueue<VMReference> refQueue;
     private final Map<PhantomReference<VMReference>, Integer> activeReferences;
 
-    public VMMemoryImpl(long size) {
+    public VMMemoryImpl() {
         refQueue = new ReferenceQueue<>();
         activeReferences = new HashMap<>();
     }

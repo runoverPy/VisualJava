@@ -1,5 +1,7 @@
 package com.visualjava.data;
 
+import com.visualjava.data.attributes.AttribCode;
+import com.visualjava.data.attributes.AttribLineNumberTable;
 import com.visualjava.data.attributes.Attribute;
 import com.visualjava.data.constants.ConstUTF8;
 
@@ -45,6 +47,29 @@ public class Method {
 
     @Override
     public String toString() {
-        return classData.resolveConstPoolIndex(name_index, ConstUTF8.class).getValue() + classData.resolveConstPoolIndex(desc_index, ConstUTF8.class).getValue();
+        return getName() + ":" + getDesc();
+    }
+
+    public int getAccessFlags() {
+        return access_flags;
+    }
+
+    public String getName() {
+        return classData.resolveConstPoolIndex(name_index, ConstUTF8.class).getValue();
+    }
+
+    public String getDesc() {
+        return classData.resolveConstPoolIndex(desc_index, ConstUTF8.class).getValue();
+    }
+
+    public <T extends Attribute> T getAttributeOrNull(Class<T> _class) {
+        for (Attribute attr : attributes) {
+            if (_class == attr.getClass()) return (T) attr;
+        }
+        return null;
+    }
+
+    public List<Attribute> getAttributes() {
+        return attributes;
     }
 }

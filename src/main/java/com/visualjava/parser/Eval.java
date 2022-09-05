@@ -6,9 +6,9 @@ import java.util.regex.Pattern;
 
 
 public class Eval {
-    private final Map<String, Integer> localVars;
+    private final Map<String, Object> localVars;
 
-    private Eval(Map<String, Integer> localVars) {
+    private Eval(Map<String, Object> localVars) {
         this.localVars = localVars;
     }
 
@@ -16,7 +16,7 @@ public class Eval {
         return eval(expression, new HashMap<>());
     }
 
-    public static int eval(String expression, Map<String, Integer> localVars) throws ExpressionFormatException {
+    public static int eval(String expression, Map<String, Object> localVars) throws ExpressionFormatException {
         return new Eval(localVars)._eval(expression);
     }
 
@@ -181,9 +181,9 @@ public class Eval {
             this.handle = handle;
         }
 
-        public int getValue(Map<String, Integer> localVars) {
+        public int getValue(Map<String, Object> localVars) {
             if (!localVars.containsKey(getVarName())) throw new MissingVariableException();
-            return localVars.get(this.handle);
+            return (Integer) localVars.get(this.handle);
         }
 
         public int getValue() {

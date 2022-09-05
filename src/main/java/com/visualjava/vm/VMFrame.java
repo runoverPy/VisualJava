@@ -2,9 +2,11 @@ package com.visualjava.vm;
 
 import com.visualjava.CodeLineMapper;
 import com.visualjava.ExceptionMapper;
+import com.visualjava.data.Instruction;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 public class VMFrame {
@@ -18,9 +20,12 @@ public class VMFrame {
 
     private Throwable currentThrowable = null;
     private boolean holdsThrowable;
+    private VMType returnValue;
+    private boolean isReturning;
+    private VMMethod invokedMethod;
 
-    private VMType[] locals;
-    private Stack<VMType> stack;
+    private final VMType[] locals;
+    private final Stack<VMType> stack;
 
     private int pc = 0;
 
@@ -45,20 +50,6 @@ public class VMFrame {
         );
     }
 
-
-
-    public void checkForThrowable() {
-        if (currentThrowable != null) {
-            Integer handlerPC = excMapper.getHandlerPC(pc);
-            if (handlerPC != null) {
-                setPC(handlerPC);
-                currentThrowable = null;
-            } else {
-                VMReference throwable = popStack(VMReference.class);
-            }
-        }
-    }
-
     public boolean setThrowable(VMReference throwable) {
         if (!holdsThrowable) {
             holdsThrowable = true;
@@ -68,16 +59,72 @@ public class VMFrame {
         } else return false;
     }
 
+    public VMReference checkForThrowable() {
+        if (holdsThrowable) {
+            VMReference thowable = popStack(VMReference.class);
+            Integer handlerPC = excMapper.getHandlerPC(pc);
+            if (handlerPC != null) {
+                setPC(handlerPC);
+                holdsThrowable = false;
+            } else {
+                return thowable;
+            }
+        }
+        return null;
+    }
+
+    public boolean setReturnValue(VMType returnValue) {
+        if (!isReturning) {
+            isReturning = true;
+            this.returnValue = returnValue;
+            return true;
+        } else return false;
+    }
+
+    public boolean checkForReturnValue() {
+        return isReturning;
+    }
+
+    public VMType getReturnValue() {
+        return returnValue;
+    }
+
+    public boolean setInvokedMethod(VMMethod method) {
+        if (this.invokedMethod != null) return false;
+        this.invokedMethod = method;
+        return true;
+    }
+
+    public VMMethod getInvokedMethod() {
+        VMMethod invokedMethod = this.invokedMethod;
+        if (invokedMethod != null) this.invokedMethod = null;
+        return invokedMethod;
+    }
+
+    public VMMethod getMethod() {
+        return method;
+    }
+
+    public Instruction getCurrentInstruction() {
+        return method.getInstruction(pc);
+    }
+
     public void emptyStack() {
-        stack.empty();
+        synchronized (stack) {
+            stack.empty();
+        }
     }
 
     public void pshStack(VMType value) {
-        stack.push(value);
+        synchronized (stack) {
+            stack.push(value);
+        }
     }
 
     public VMType popStack() {
-        return stack.pop();
+        synchronized (stack) {
+            return stack.pop();
+        }
     }
 
     public <T extends VMType> T popStack(Class<T> _class) {
@@ -85,11 +132,15 @@ public class VMFrame {
     }
 
     public void putLocal(int index, VMType value) {
-        locals[index] = value;
+        synchronized (locals) {
+            locals[index] = value;
+        }
     }
 
     public VMType getLocal(int index) {
-        return locals[index];
+        synchronized (locals) {
+            return locals[index];
+        }
     }
 
     public <T extends VMType> T getLocal(int index, Class<T> _class) {
@@ -107,4 +158,78 @@ public class VMFrame {
     public void setPC(int branch) {
         pc = branch;
     }
+
+    public String frameState() {
+        String arr, loc;
+        synchronized (stack) {
+            VMType[] stackArr = stack.toArray(VMType[]::new);
+            arr = Arrays.toString(stackArr);
+        }
+        synchronized (locals) {
+            loc = Arrays.toString(locals);
+        }
+
+        return "stack: " + arr + ", locals: " + loc;
+    }
+
+    public class PCHandler {
+        private static PCHandler activeHandler;
+
+        private Offset offset;
+
+        public PCHandler() {
+            if (activeHandler != null) throw new IllegalStateException("Cannot create new PCHandler, the previous one has not been executed yet");
+            this.offset = new RelativeOffset(getCurrentInstruction().getArgc());
+            activeHandler = this;
+        }
+
+        public void setRelativeOffset(int offset) {
+            this.offset = new RelativeOffset(offset);
+        }
+
+        public void setAbsoluteOffset(int offset) {
+            this.offset = new AbsoluteOffset(offset);
+        }
+
+        public void execute() {
+            if (activeHandler == this) {
+                setPC(offset.getOffset());
+                activeHandler = null;
+            } else throw new IllegalStateException("Cannot execute PCHandler");
+        }
+
+        private abstract static class Offset {
+            protected final int offset;
+
+            public Offset(int offset) {
+                this.offset = offset;
+            }
+
+            abstract int getOffset();
+        }
+
+        private static class AbsoluteOffset extends Offset {
+            public AbsoluteOffset(int offset) {
+                super(offset);
+            }
+
+            @Override
+            int getOffset() {
+                return offset;
+            }
+        }
+
+        private class RelativeOffset extends Offset {
+            public RelativeOffset(int offset) {
+                super(offset);
+            }
+
+            @Override
+            int getOffset() {
+                return pc + offset;
+            }
+        }
+    }
+
+
 }
