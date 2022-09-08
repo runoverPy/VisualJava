@@ -18,7 +18,7 @@ public class Executor {
     public final void execute(ExecutionContext context) {
         try {
             System.out.println("\t" + context.frame().frameState());
-            System.out.println("executing [" + context.getInstr().getMnemonic() + "] for " + Thread.currentThread());
+            System.out.println("executing [" + context.getInstr().getMnemonic() + "] for " + Thread.currentThread() + " in method " + context.getMethod());
             instructionExecutor.getClass().getDeclaredMethod(
                     "impl_" + context.getInstr().getMnemonic(),
                     ExecutionContext.class

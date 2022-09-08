@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VMMethod {
-    private final String methodRepr;
     private final String declaringClass;
     private final String classFileName;
     private final String methodName;
@@ -28,7 +27,6 @@ public class VMMethod {
 
 
     public VMMethod(ClassData classData, Method methodData) {
-        methodRepr = methodData.toString();
         declaringClass = classData.getClassName();
         classFileName = classData.getClassFileName();
         methodName = methodData.getName();
@@ -104,5 +102,10 @@ public class VMMethod {
         return Instruction.read(
                 new DataInputStream(new ByteArrayInputStream(bytecode, pc, bytecode.length - pc)), pc
         );
+    }
+
+    @Override
+    public String toString() {
+        return getMethodName() + ":" + getMethodDesc();
     }
 }

@@ -9,8 +9,6 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import sun.misc.Unsafe;
-
 public class VMMemoryImpl implements VMMemory {
 //    private static final Unsafe unsafe;
 //
@@ -87,17 +85,33 @@ public class VMMemoryImpl implements VMMemory {
         }
     }
 
+    private int reserveToken() {
+        int token;
+        do {
+            token = new Random().nextInt();
+        } while (isTokenReserved(token));
+        return token;
+    }
+
+    private boolean isTokenReserved(int token) {
+        return false;
+    }
+
+    private void releaseToken(int token) {
+
+    }
+
     @Override
     public VMObjectReference newObject(ConstClass constClass) {
-        int token = new Random().nextInt();
         VMObjectReference objectReference = new VMObjectReference();
         PhantomReference<VMReference> phantomReference = new PhantomReference<>(objectReference, refQueue);
-        activeReferences.put(phantomReference, token);
+        activeReferences.put(phantomReference, reserveToken());
         return objectReference;
     }
 
     @Override
     public VMArrayReference newArray(ConstClass constClass) {
+        VMArrayReference arrayReference = new VMArrayReference();
         return null;
     }
 
@@ -129,11 +143,13 @@ public class VMMemoryImpl implements VMMemory {
 
     }
 
-    private class MemObject {
+    private class MEMType {}
+
+    private class MEMObject extends MEMType {
         private final String type;
         private final Map<String, VMType> fields;
 
-        public MemObject(String type) {
+        public MEMObject(String type) {
             this.type = type;
             this.fields = new HashMap<>();
         }
@@ -144,6 +160,24 @@ public class VMMemoryImpl implements VMMemory {
 
         public void putField(String field, VMType value) {
             fields.put(field, value);
+        }
+    }
+
+    private class MEMArray extends MEMType {
+        private final String elementType;
+        private final VMType[] slots;
+
+        public MEMArray(String elementType, int length) {
+            this.elementType = elementType;
+            this.slots = new VMType[length];
+        }
+
+        public VMType getField(int index) {
+            return slots[index];
+        }
+
+        public void putField(int index, VMType value) {
+            slots[index] = value;
         }
     }
 }

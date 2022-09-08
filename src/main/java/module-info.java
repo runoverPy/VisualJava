@@ -8,6 +8,7 @@ module com.visualjava {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires org.json;
+    requires commons.cli;
 
     requires jdk.unsupported;
     requires java.instrument;

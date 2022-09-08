@@ -2,59 +2,80 @@ package com.visualjava.vm;
 
 import com.visualjava.ExecutionContext;
 import com.visualjava.Executor;
-import com.visualjava.types.VMNullReference;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 
-public class VMThread extends Thread {
-    private String name;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class VMThread implements Runnable {
+    private final String name;
+    private final Boolean daemon;
     private final VMStack stack;
     private final Executor executor;
 
-    private volatile int cycleFrequency = 64;
-    private volatile boolean paused = false;
-    private volatile boolean killed = false;
+    private final AtomicInteger cycleFrequency = new AtomicInteger(1);
+    private final AtomicBoolean paused = new AtomicBoolean(false);
+    private final AtomicBoolean killed = new AtomicBoolean(false);
 
-    public VMThread(String name, VMMethod runMethod, VMType[] args) {
-        super("VMThread \"" + name + "\"");
+    private final Thread innerThread;
+
+    public VMThread(String name, VMMethod runMethod, VMType[] args, Boolean daemon) {
+        this.daemon = daemon;
         this.stack = new VMStack();
         this.executor = new Executor();
         this.name = name;
         stack.pushFrame(new VMFrame(runMethod, args));
-        start();
+        this.innerThread = new Thread(this);
+        innerThread.start();
     }
 
     @Override
     public void run() {
-        int cycleFrequency = this.cycleFrequency;
+        VMRuntime.getInstance().onThreadStart(this);
+        int cycleFrequency = this.cycleFrequency.get();
         long beginTime = System.nanoTime();
         boolean isPaused = false;
         long timeAtPause = 0L;
 
-        while (!stack.isComplete() && !killed) {
+        while (!stack.isComplete() && !killed.get()) {
             long presentTime = System.nanoTime();
             if ((presentTime - beginTime) / 1e9 >= 1d / cycleFrequency && !isPaused) {
                 doCycle();
                 beginTime = presentTime;
-                cycleFrequency = this.cycleFrequency;
+                cycleFrequency = this.cycleFrequency.get();
             }
-            if (this.paused && !isPaused) {
+            if (this.paused.get() && !isPaused) {
                 isPaused = true;
                 timeAtPause = presentTime - beginTime;
             }
-            if (!this.paused && isPaused) {
+            if (!this.paused.get() && isPaused) {
                 isPaused = false;
                 beginTime = System.nanoTime() + timeAtPause;
             }
         }
 
+        if (!killed.get()) killed.set(true);
         VMRuntime runtime = VMRuntime.getInstance();
-        runtime.onThreadDeath(name);
+        runtime.onThreadDeath(this);
     }
 
-    public void togglePause() {}
+    public void togglePause() {
+        paused.set(!paused.get());
+    }
 
-    public void killThread() {}
+    public void killThread() {
+        if (!killed.get()) killed.set(true);
+        else throw new IllegalStateException("cannot kill thread, thread already killed");
+    }
+
+    public void setCycleFrequency(int cycleFrequency) {
+        this.cycleFrequency.set(cycleFrequency);
+    }
+
+    public int getCycleFrequency() {
+        return this.cycleFrequency.get();
+    }
 
     public void doCycle() {
         VMFrame topFrame = stack.popFrame();
@@ -73,7 +94,7 @@ public class VMThread extends Thread {
                 } else {
                     System.out.println();
                     if (returnValue != null) System.out.println("return value: " + returnValue);
-                    System.out.println("execution complete, thread closing");
+                    System.out.println("execution complete, thread \"" + name + "\" closing");
                     return;
                 }
             }
@@ -82,8 +103,7 @@ public class VMThread extends Thread {
                 stack.pushFrame(topFrame);
                 VMType[] args = new VMType[invokedMethod.getNArgs()];
                 for (int i = args.length - 1; i >= 0; i--) {
-                    VMType arg = topFrame.popStack();
-                    args[i] = arg;
+                    args[i] = topFrame.popStack();
                 }
                 topFrame = new VMFrame(invokedMethod, args);
             }
@@ -92,7 +112,11 @@ public class VMThread extends Thread {
     }
 
     public boolean isVMThreadDaemon() {
-        return false;
+        return daemon;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

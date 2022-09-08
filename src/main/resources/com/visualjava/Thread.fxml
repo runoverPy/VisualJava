@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="653.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.ThreadController">
+<AnchorPane prefHeight="653.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.ThreadController">
 
     <children>
         <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="180.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -21,7 +28,7 @@
                                 </Label>
                                 <ButtonBar layoutX="195.0" layoutY="9.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="8.0">
                                     <buttons>
-                                        <ToggleButton mnemonicParsing="false" text="Pause Thread" />
+                                        <ToggleButton mnemonicParsing="false" onAction="#pauseThread" text="Pause Thread" />
                                         <Button id="kill-button" mnemonicParsing="false" onAction="#killThread" style="-fx-background-color: rgb(222,58,58); -fx-background-color: linear-gradient(to top, #a4052d 0%, #b30825 50%, #dd1111 100%);" styleClass=".button" text="Kill Thread" textFill="WHITE">
                                             <font>
                                                 <Font name="System Bold" size="13.0" />
@@ -31,21 +38,21 @@
                                 </ButtonBar>
                             </children>
                         </AnchorPane>
-                        <Label fx:id="threadName" layoutX="14.0" layoutY="8.0" prefHeight="27.0" text="Thread &quot;main&quot;" textAlignment="CENTER" textFill="#9f9f9f" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="8.0">
+                        <Label fx:id="threadNameLabel" layoutX="14.0" layoutY="8.0" prefHeight="27.0" text="\%ThreadName%" textAlignment="CENTER" textFill="#9f9f9f" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="8.0">
                             <font>
                                 <Font size="18.0" />
                             </font>
                         </Label>
-                        <Accordion layoutX="20.0" layoutY="117.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="140.0">
+                        <Accordion layoutX="20.0" layoutY="200.0" prefHeight="431.0" prefWidth="558.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="200.0">
                      <panes>
-                                <TitledPane animated="false" text="Thread Variables" />
+                                <TitledPane animated="false" prefHeight="390.0" prefWidth="558.0" text="Thread Variables" />
                                 <TitledPane animated="false" prefHeight="484.0" prefWidth="431.0" text="ThreadStack">
                                     <content>
                                         <AnchorPane />
                                     </content>
                                 </TitledPane>
                      </panes></Accordion>
-                  <Label layoutX="524.0" layoutY="14.0" prefHeight="27.0" text="daemon: false" textFill="#9f9f9f" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
+                  <Label fx:id="isDaemonLabel" layoutX="524.0" layoutY="14.0" prefHeight="27.0" text="\%Daemonicity%" textFill="#9f9f9f" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="8.0">
                      <font>
                         <Font size="18.0" />
                      </font>

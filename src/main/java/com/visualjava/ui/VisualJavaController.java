@@ -1,11 +1,13 @@
 package com.visualjava.ui;
 
+import com.visualjava.vm.RuntimeEventsListener;
+import com.visualjava.vm.VMRuntime;
+import com.visualjava.vm.VMThread;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 
@@ -23,14 +25,11 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
-public class VisualJavaController {
+public class VisualJavaController implements RuntimeEventsListener {
     @FXML
     public TabPane threadContainer;
     @FXML
-    public TextField threadName;
-    @FXML
     public SwingNode terminalCase;
-    private JTextPane terminalPane;
 
     private static VisualJavaController instance;
 
@@ -41,10 +40,11 @@ public class VisualJavaController {
     public VisualJavaController() throws InstantiationException {
         if (instance == null) instance = this;
         else throw new InstantiationException("Singleton Instance already created");
+        VMRuntime.getInstance().setRuntimeListener(this);
     }
 
     public void initialize() {
-        terminalPane = new JTextPane();
+        JTextPane terminalPane = new JTextPane();
         terminalPane.setEditable(false);
         terminalPane.setBackground(Color.BLACK);
         terminalPane.setForeground(Color.GREEN);
@@ -117,38 +117,45 @@ public class VisualJavaController {
         return new PrintStream(backErr, true);
     }
 
-    public void killThread(String threadName) {
-        Tab mortalThreadTab = threadContainer
-          .getTabs()
-          .stream()
-          .filter(tab -> tab.getText().equals(threadName))
-          .findFirst()
-          .get();
-        Tab selectedTab = threadContainer.getSelectionModel().getSelectedItem();
-    }
-    public void addThread(String threadName) throws IOException {
-        AnchorPane threadPane = ThreadController.newThread(threadName);
+    public void addThread(VMThread thread) throws IOException {
+        AnchorPane threadPane = ThreadController.newThread(thread);
         Tab threadTab = new Tab();
-        threadTab.setText(threadName);
+        threadTab.setText(thread.getName());
         threadTab.setClosable(false);
         threadTab.setContent(threadPane);
         threadContainer.getTabs().add(threadTab);
     }
 
-    public void addThread(ActionEvent action) throws IOException {
-        String threadName = this.threadName.getText();
-        if (threadName.equals("")) System.out.println("No name is not a valid name");
-        else addThread(threadName);
-        this.threadName.clear();
+    public void delThread(VMThread thread) {
+        threadContainer
+          .getTabs()
+          .stream()
+          .filter(tab -> tab.getText().equals(thread.getName()))
+          .findFirst()
+          .ifPresentOrElse(
+            threadTab -> threadContainer.getTabs().remove(threadTab),
+            () -> System.out.println("Cannot find thread \"" + thread.getName() + "\"")
+          );
     }
 
-    @FXML
-    public void killThread() {
-        System.out.println("killing thread");
+    @Override
+    public void onThreadSpawn(VMThread thread) {
+        Platform.runLater(() -> {
+            try {
+                addThread(thread);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    @FXML
-    public void acceptEvent(Event e) {
-        System.out.println(e);
+    @Override
+    public void onThreadDeath(VMThread thread) {
+        Platform.runLater(() -> delThread(thread));
+    }
+
+    @Override
+    public void onRuntimeExit() {
+
     }
 }

@@ -41,7 +41,6 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -117,7 +116,6 @@
                         </font>
                     </Label>
                     <TabPane fx:id="threadContainer" layoutY="50.0" prefHeight="621.0" prefWidth="390.0" stylesheets="@hidden_tab_header.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
-                    <TextField fx:id="threadName" layoutX="288.0" layoutY="13.0" onAction="#addThread" promptText="Insert new Thread" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="12.0" />
             </children>
         </AnchorPane>
         <AnchorPane>
