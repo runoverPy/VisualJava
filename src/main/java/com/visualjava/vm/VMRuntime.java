@@ -6,63 +6,39 @@ import com.visualjava.ui.VisualJavaController;
 import org.apache.commons.cli.*;
 
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class VMRuntime {
-    private static VMRuntime instance;
-
-    public synchronized static VMRuntime getInstance() {
-        if (instance == null) instance = new VMRuntime();
-        return instance;
+    public static List<Path> parseClassPaths(String classPathsRaw) {
+        String[] paths = classPathsRaw.split(":");
+        List<Path> classPaths = new ArrayList<>(paths.length);
+        for (String path : paths) try {
+            classPaths.add(Path.of(path));
+        } catch (InvalidPathException ignored) {
+            System.err.println("\"" + path + "\" is not a valid path on this system");
+        }
+        return classPaths;
     }
 
-    private static Path classPath;
-
     static {
-        URL classPathURL = VMRuntime.class.getResource("/com/visualjava");
-        if (classPathURL == null) throw new RuntimeException("could not find classpath");
-        classPath = Path.of(classPathURL.getPath());
+//        URL classPathURL = VMRuntime.class.getResource("/com/visualjava");
+//        if (classPathURL == null) throw new RuntimeException("could not find classpath");
+//        classPath = Path.of(classPathURL.getPath());
     }
 
     public static void main(String[] args) {
-        launch(args);
-        System.out.println("exiting main");
+        new VMRuntime("~/IdeaProjects/VisualJava/src/main/resources/com/visualjava/:~/IdeaProjects/VisualJava/testfiles/").init("Fibonacci", 4);
     }
 
-    public static void launch(String[] args) {
-        String relativeClassPath = "/com/visualjava";
-
-        Options cliOptions = new Options();
-
-        Option classPathOption = new Option("cp", "class-path", true, "path to class files");
-        classPathOption.setRequired(false);
-        cliOptions.addOption(classPathOption);
-
-        DefaultParser parser = new DefaultParser();
-        try {
-            CommandLine cmdLine = parser.parse(cliOptions, args);
-            String[] remainingArgs = cmdLine.getArgs();
-            String mainFile = remainingArgs[0];
-
-            VMRuntime runtime = VMRuntime.getInstance();
-            runtime.init(mainFile);
-        } catch (ParseException | ArrayIndexOutOfBoundsException e) {
-            System.out.println("Illegal combination of arguments.");
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("%command%", "", cliOptions, "", true);
-        }
-        //runtime.init("fibonacci", "(I)I", "Fibonacci", new VMType[] {new VMInt(10)});
-    }
-
-    public static Path getClassPath() {
-        return classPath;
-    }
     private final Map<String, VMThread> threads;
     private final VMMethodPool methodPool;
     private final VMMemory memory;
     private final VMClassLoader loader;
+    private final List<Path> classPath;
 
     private RuntimeEventsListener runtimeListener = RuntimeEventsListener.NULL;
 
@@ -71,23 +47,40 @@ public class VMRuntime {
         this.runtimeListener = runtimeListener;
     }
 
-    private VMRuntime() {
+    public VMRuntime(String classPath) {
+        this(parseClassPaths(classPath));
+    }
+
+    public VMRuntime(List<Path> classPath) {
         this.threads = new HashMap<>();
         this.methodPool = new VMMethodPool();
         this.memory = new VMMemoryImpl();
-        this.loader = new VMClassLoader();
+        this.loader = new VMClassLoader(this);
+        this.classPath = classPath;
         loader.registerClassLoadListener(methodPool);
     }
 
-    public void init(String className) {
-        init("main", "([Ljava/lang/String;)V", className, new VMType[] {new VMNullReference()});
+    public void init(String className) throws NoSuchMethodError {
+        init(className, 1);
     }
 
-    public void init(String methodName, String methodDesc, String methodClassName, VMType[] args) {
-        loader.loadIfNotAlready(methodClassName);
-        VMMethod mainMethod = methodPool.resolve(methodName, methodDesc, methodClassName);
-        VMThread main = new VMThread("main", mainMethod, args, false);
+    public void init(String className, int frequency) {
+        loader.loadIfNotAlready(className);
+        VMMethod mainMethod = methodPool.resolve("main", "([Ljava/lang/String;)V", className);
+        if (mainMethod == null) throw new NoSuchMethodError("Specified class has no main method, or the signature is wrong");
+        VMThread main = new VMThread(this, "main", mainMethod, new VMType[] { new VMNullReference() }, false);
+        main.setCycleFrequency(frequency);
         threads.put("main", main);
+    }
+
+    public Path resolveClassPath(String className) {
+        if (!className.contains(".class")) className = className + ".class";
+        for (Path path : classPath) {
+            if (!Files.isDirectory(path)) continue;
+            Path classPath = path.resolve(className);
+            if (Files.exists(classPath)) return classPath;
+        }
+        return null;
     }
 
     public VMMemory getMemory() {

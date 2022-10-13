@@ -12,12 +12,14 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class VMClassLoader {
+    private final VMRuntime runtime;
     private final Map<String, ClassData> loadedClasses;
     private final List<ClassLoadListener> listeners;
 
-    VMClassLoader() {
+    VMClassLoader(VMRuntime runtime) {
         this.loadedClasses = new HashMap<>();
         this.listeners = new ArrayList<>();
+        this.runtime = runtime;
     }
 
     public boolean isClassLoaded(String className) {
@@ -29,7 +31,7 @@ public class VMClassLoader {
     }
 
     public void loadClass(String className) {
-        Path absolutePathToClass = VMRuntime.getClassPath().resolve(className + ".class");
+        Path absolutePathToClass = runtime.resolveClassPath(className);
         try (InputStream stream = new FileInputStream(String.valueOf(absolutePathToClass))) {
             ClassData classData = ClassData.read(new DataInputStream(stream));
             loadedClasses.put(className, classData);

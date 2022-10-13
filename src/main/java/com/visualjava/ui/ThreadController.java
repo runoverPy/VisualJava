@@ -1,14 +1,14 @@
 package com.visualjava.ui;
 
 import com.visualjava.vm.ThreadEventsListener;
-import com.visualjava.vm.VMRuntime;
+import com.visualjava.vm.VMFrame;
 import com.visualjava.vm.VMThread;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.util.*;
@@ -46,6 +46,9 @@ public class ThreadController implements ThreadEventsListener {
     @FXML
     private TextField cycleFreqField;
 
+    @FXML
+    private VBox frames;
+
     public void initialize() {
         threadNameLabel.setText(String.format("Thread \"%s\"", threadName));
         isDaemonLabel.setText(String.format("is daemon: %b", thread.isVMThreadDaemon()));
@@ -76,5 +79,15 @@ public class ThreadController implements ThreadEventsListener {
             if (!styleClass.contains("error")) styleClass.add("error");
             System.out.println(styleClass);
         }
+    }
+
+    @Override
+    public void onFramePush(VMFrame frame) {
+        frames.getChildren().add(FrameUIElement.create());
+    }
+
+    @Override
+    public void onFramePop(VMFrame frame) {
+        frames.getChildren().remove(0);
     }
 }

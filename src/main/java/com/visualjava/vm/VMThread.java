@@ -1,7 +1,7 @@
 package com.visualjava.vm;
 
-import com.visualjava.ExecutionContext;
-import com.visualjava.Executor;
+import com.visualjava.invoke.ExecutionContext;
+import com.visualjava.invoke.Executor;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 
@@ -10,8 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class VMThread implements Runnable {
     private final String name;
-    private final Boolean daemon;
+    private final boolean daemon;
     private final VMStack stack;
+    private final VMRuntime runtime;
     private final Executor executor;
 
     private final AtomicInteger cycleFrequency = new AtomicInteger(1);
@@ -20,7 +21,8 @@ public class VMThread implements Runnable {
 
     private final Thread innerThread;
 
-    public VMThread(String name, VMMethod runMethod, VMType[] args, Boolean daemon) {
+    public VMThread(VMRuntime runtime, String name, VMMethod runMethod, VMType[] args, boolean daemon) {
+        this.runtime = runtime;
         this.daemon = daemon;
         this.stack = new VMStack();
         this.executor = new Executor();
@@ -32,7 +34,7 @@ public class VMThread implements Runnable {
 
     @Override
     public void run() {
-        VMRuntime.getInstance().onThreadStart(this);
+        runtime.onThreadStart(this);
         int cycleFrequency = this.cycleFrequency.get();
         long beginTime = System.nanoTime();
         boolean isPaused = false;
@@ -56,7 +58,6 @@ public class VMThread implements Runnable {
         }
 
         if (!killed.get()) killed.set(true);
-        VMRuntime runtime = VMRuntime.getInstance();
         runtime.onThreadDeath(this);
     }
 
@@ -84,7 +85,7 @@ public class VMThread implements Runnable {
             topFrame = stack.popFrame();
             topFrame.setThrowable(throwable);
         } else {
-            executor.execute(new ExecutionContext(topFrame));
+            executor.execute(new ExecutionContext(runtime, topFrame));
 
             if (topFrame.checkForReturnValue()) {
                 VMType returnValue = topFrame.getReturnValue();

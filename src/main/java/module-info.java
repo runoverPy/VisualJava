@@ -22,4 +22,5 @@ module com.visualjava {
     exports com.visualjava.ui;
 
     opens com.visualjava.ui to javafx.fxml;
+    exports com.visualjava.invoke;
 }

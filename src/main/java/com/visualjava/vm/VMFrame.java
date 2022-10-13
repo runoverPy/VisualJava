@@ -5,6 +5,8 @@ import com.visualjava.ExceptionMapper;
 import com.visualjava.data.Instruction;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
+import com.visualjava.ui.FrameUIElement;
+import javafx.scene.layout.AnchorPane;
 
 import java.util.Arrays;
 import java.util.Stack;
@@ -18,7 +20,6 @@ public class VMFrame {
 
     private final VMMethod method;
 
-    private Throwable currentThrowable = null;
     private boolean holdsThrowable;
     private VMType returnValue;
     private boolean isReturning;
@@ -231,5 +232,7 @@ public class VMFrame {
         }
     }
 
-
+    public FrameUIElement getFrameUIElement() {
+        return new FrameUIElement();
+    }
 }

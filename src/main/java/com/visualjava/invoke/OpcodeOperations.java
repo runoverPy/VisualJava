@@ -1,4 +1,4 @@
-package com.visualjava;
+package com.visualjava.invoke;
 
 public interface OpcodeOperations {
     default void impl_nop(ExecutionContext context) {}

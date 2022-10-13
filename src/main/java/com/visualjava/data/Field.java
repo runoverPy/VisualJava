@@ -47,7 +47,6 @@ public class Field {
                 "access_flags=" + access_flags +
                 ", name=" + classData.resolveConstPoolIndex(name_index) +
                 ", desc=" + classData.resolveConstPoolIndex(desc_index) +
-                ", attr_count=" + attr_count +
                 ", attributes=" + attributes +
                 '}';
     }

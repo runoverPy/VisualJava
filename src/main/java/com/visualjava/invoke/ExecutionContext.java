@@ -1,4 +1,4 @@
-package com.visualjava;
+package com.visualjava.invoke;
 
 import com.visualjava.data.Instruction;
 import com.visualjava.data.constants.ConstantPool;
@@ -8,13 +8,15 @@ import com.visualjava.vm.*;
  *
  */
 public final class ExecutionContext {
+    private final VMRuntime runtime;
     private final VMFrame frame;
     private final Instruction instr;
     private final VMFrame.PCHandler pcHandler;
 
     /**
      */
-    public ExecutionContext(VMFrame frame) {
+    public ExecutionContext(VMRuntime runtime, VMFrame frame) {
+        this.runtime = runtime;
         this.frame = frame;
         this.instr = frame.getCurrentInstruction();
         this.pcHandler = frame.new PCHandler();
@@ -37,18 +39,18 @@ public final class ExecutionContext {
     }
 
     public ConstantPool getConstPool() {
-        return VMRuntime.getInstance()
+        return runtime
                 .getLoader()
                 .getLoadedClassOrNull(getMethod().getDeclaringClass())
                 .getConstPool();
     }
 
     public VMMethodPool getMethodPool() {
-        return VMRuntime.getInstance().getMethodPool();
+        return runtime.getMethodPool();
     }
 
     public VMMemory getVMMemory() {
-        return VMRuntime.getInstance().getMemory();
+        return runtime.getMemory();
     }
 
     public VMFrame.PCHandler getPCHandler() {

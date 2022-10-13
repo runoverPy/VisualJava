@@ -9,6 +9,7 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane prefHeight="653.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.ThreadController">
@@ -45,7 +46,14 @@
                         </Label>
                         <Accordion layoutX="20.0" layoutY="200.0" prefHeight="431.0" prefWidth="558.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="200.0">
                      <panes>
-                                <TitledPane animated="false" prefHeight="390.0" prefWidth="558.0" text="Thread Variables" />
+                                <TitledPane animated="false" prefHeight="390.0" prefWidth="558.0" text="Thread Variables">
+                           <content>
+                              <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0">
+                                 <content>
+                                    <VBox fx:id="frames" prefHeight="200.0" prefWidth="100.0" />
+                                 </content>
+                              </ScrollPane>
+                           </content></TitledPane>
                                 <TitledPane animated="false" prefHeight="484.0" prefWidth="431.0" text="ThreadStack">
                                     <content>
                                         <AnchorPane />

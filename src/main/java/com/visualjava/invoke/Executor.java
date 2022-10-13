@@ -1,4 +1,4 @@
-package com.visualjava;
+package com.visualjava.invoke;
 
 import com.visualjava.data.constants.*;
 import com.visualjava.types.*;

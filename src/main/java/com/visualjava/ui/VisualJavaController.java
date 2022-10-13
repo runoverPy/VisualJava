@@ -4,117 +4,50 @@ import com.visualjava.vm.RuntimeEventsListener;
 import com.visualjava.vm.VMRuntime;
 import com.visualjava.vm.VMThread;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingNode;
-import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.*;
 
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
-
-import java.awt.*;
-import java.io.ByteArrayOutputStream;
+import javafx.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VisualJavaController implements RuntimeEventsListener {
     @FXML
-    public TabPane threadContainer;
+    public SplitPane contentRoot;
     @FXML
-    public SwingNode terminalCase;
+    public TabPane threadContainer;
+    private final FileChooser fileChooser = new FileChooser();
+    private final List<Path> classPath = new ArrayList<>();
+    private VMRuntime runtime;
 
-    private static VisualJavaController instance;
+//    private final Terminal terminal;
 
-    public static VisualJavaController getInstance() {
-        return instance;
-    }
-
-    public VisualJavaController() throws InstantiationException {
-        if (instance == null) instance = this;
-        else throw new InstantiationException("Singleton Instance already created");
-        VMRuntime.getInstance().setRuntimeListener(this);
+    public VisualJavaController() {
+//        this.terminal = new Terminal();
     }
 
     public void initialize() {
-        JTextPane terminalPane = new JTextPane();
-        terminalPane.setEditable(false);
-        terminalPane.setBackground(Color.BLACK);
-        terminalPane.setForeground(Color.GREEN);
-        terminalPane.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        terminalPane.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        JScrollPane textScrollPane = new JScrollPane(terminalPane);
-        textScrollPane.setBounds(10, 10, 450, 500);
-        textScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        terminalCase.setContent(textScrollPane);
-
-        PrintStream out, err;
-        out = createOutStream(terminalPane);
-        err = createErrStream(terminalPane);
-
-        System.setOut(out);
-        System.setErr(err);
-    }
-
-    private static PrintStream createOutStream(JTextPane textPane) {
-        StyledDocument document = textPane.getStyledDocument();
-        OutputStream backOut = new OutputStream() {
-            private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            @Override
-            public void write(int data) {
-                buffer.write(data & 0xff);
-            }
-
-            @Override
-            public void flush() {
-                try {
-                    document.insertString(document.getLength(), buffer.toString(StandardCharsets.UTF_8), null);
-                } catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                buffer.reset();
-            }
-        };
-        return new PrintStream(backOut, true);
-    }
-
-    private static PrintStream createErrStream(JTextPane textPane) {
-        SimpleAttributeSet errAttributes = new SimpleAttributeSet();
-        StyleConstants.setForeground(errAttributes, Color.RED);
-
-        StyledDocument document = textPane.getStyledDocument();
-
-        OutputStream backErr = new OutputStream() {
-            private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            @Override
-            public void write(int data) {
-                buffer.write(data & 0xff);
-            }
-
-            @Override
-            public void flush() {
-                try {
-                    document.insertString(
-                      document.getLength(),
-                      buffer.toString(StandardCharsets.UTF_8),
-                      errAttributes
-                    );
-                } catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                buffer.reset();
-            }
-        };
-        return new PrintStream(backErr, true);
+//        PrintStream
+//          out = terminal.createOutStream(),
+//          err = terminal.createErrStream();
+//        err.println("This feature is useless, there is currenty no plan to implement objects so anything using Strings and PrintStreams are kinda useless");
+//        out.println("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.");
+//        List<File> chosenFile = fileChooser.showOpenMultipleDialog(null);
+//        classPath.add(new DirectoryChooser().showDialog(null).toPath());
+//        runtime = new VMRuntime(classPath);
+//        runtime.init("fibonacci");
+//        runtime.setRuntimeListener(this);
     }
 
     public void addThread(VMThread thread) throws IOException {
@@ -157,5 +90,20 @@ public class VisualJavaController implements RuntimeEventsListener {
     @Override
     public void onRuntimeExit() {
 
+    }
+
+    @FXML
+    public void showClassPathDialog(ActionEvent event) {
+        Stage popup = new Stage();
+        popup.setWidth(400);
+        popup.setHeight(300);
+        Scene dialogScene = new Scene(new AnchorPane());
+        popup.setScene(dialogScene);
+        popup.initOwner(contentRoot.getScene().getWindow());
+        popup.initModality(Modality.WINDOW_MODAL);
+        popup.showAndWait();
+    }
+
+    private final static class ClassPathPopup {
     }
 }

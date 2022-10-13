@@ -12,12 +12,11 @@ public class VisualJavaApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader();
-        VBox root = fxmlLoader.load(HelloApplication.class.getResourceAsStream("/com/visualjava/VisualJava.fxml"));
+        VBox root = fxmlLoader.load(VisualJavaApplication.class.getResourceAsStream("/com/visualjava/VisualJava.fxml"));
         Scene scene = new Scene(root, root.getPrefWidth(), root.getPrefHeight());
         stage.setTitle("Visual Java Interpreter Inspection");
         stage.setScene(scene);
         stage.show();
-        VMRuntime.launch(getParameters().getRaw().toArray(new String[0]));
     }
 
     public static void main(String[] args) {
