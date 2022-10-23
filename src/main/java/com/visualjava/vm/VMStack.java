@@ -22,7 +22,7 @@ public class VMStack {
         }
     }
 
-    public boolean isComplete() {
+    public boolean isEmpty() {
         return frameStack.empty();
     }
 

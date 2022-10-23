@@ -1,22 +1,23 @@
 package com.visualjava.ui;
 
 import com.visualjava.vm.RuntimeEventsListener;
+import com.visualjava.vm.ThreadEventsListener;
 import com.visualjava.vm.VMRuntime;
 import com.visualjava.vm.VMThread;
 import javafx.application.Platform;
-import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.*;
 
 import javafx.event.ActionEvent;
-import java.io.File;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.List;
 
 public class VisualJavaController implements RuntimeEventsListener {
     @FXML
-    public SplitPane contentRoot;
+    public BorderPane rootPane;
     @FXML
     public TabPane threadContainer;
     private final FileChooser fileChooser = new FileChooser();
@@ -48,6 +49,13 @@ public class VisualJavaController implements RuntimeEventsListener {
 //        runtime = new VMRuntime(classPath);
 //        runtime.init("fibonacci");
 //        runtime.setRuntimeListener(this);
+
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            rootPane.centerProperty().set(loader.load(getClass().getResourceAsStream("/com/visualjava/fxml/Runtime.fxml")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void addThread(VMThread thread) throws IOException {
@@ -72,6 +80,11 @@ public class VisualJavaController implements RuntimeEventsListener {
     }
 
     @Override
+    public ThreadEventsListener makeThreadListener(VMThread thread) {
+        return null;
+    }
+
+    @Override
     public void onThreadSpawn(VMThread thread) {
         Platform.runLater(() -> {
             try {
@@ -92,18 +105,20 @@ public class VisualJavaController implements RuntimeEventsListener {
 
     }
 
-    @FXML
-    public void showClassPathDialog(ActionEvent event) {
-        Stage popup = new Stage();
-        popup.setWidth(400);
-        popup.setHeight(300);
-        Scene dialogScene = new Scene(new AnchorPane());
-        popup.setScene(dialogScene);
-        popup.initOwner(contentRoot.getScene().getWindow());
-        popup.initModality(Modality.WINDOW_MODAL);
-        popup.showAndWait();
+    private final static class ClassPathPopup {
     }
 
-    private final static class ClassPathPopup {
+    private void onRuntimeStart() {
+        FXMLLoader loader = new FXMLLoader();
+        try {
+            Node runtimeUI = loader.load(getClass().getResourceAsStream(""));
+            Object runtimeController = loader.getController();
+        } catch (IOException e) {
+            throw new RuntimeException("failed to load critical file", e);
+        }
+    }
+
+    private void onRuntimeDeath() {
+
     }
 }

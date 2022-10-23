@@ -31,6 +31,7 @@ public class VMClassLoader {
     }
 
     public void loadClass(String className) {
+        System.out.println("Loading class " + className);
         Path absolutePathToClass = runtime.resolveClassPath(className);
         try (InputStream stream = new FileInputStream(String.valueOf(absolutePathToClass))) {
             ClassData classData = ClassData.read(new DataInputStream(stream));

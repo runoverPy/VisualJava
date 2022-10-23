@@ -1,5 +1,6 @@
 package com.visualjava.ui;
 
+import com.visualjava.invoke.ExecutionContext;
 import com.visualjava.vm.ThreadEventsListener;
 import com.visualjava.vm.VMFrame;
 import com.visualjava.vm.VMThread;
@@ -21,22 +22,16 @@ public class ThreadController implements ThreadEventsListener {
             return new ThreadController(thread);
         });
         try {
-            return loader.load(ThreadController.class.getResourceAsStream("/com/visualjava/Thread.fxml"));
+            return loader.load(ThreadController.class.getResourceAsStream("/com/visualjava/fxml/Thread.fxml"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private VMThread thread = null;
-    private final String threadName;
+    private final VMThread thread;
 
     public ThreadController(VMThread thread) {
-        this(thread.getName());
         this.thread = thread;
-    }
-
-    public ThreadController(String threadName) {
-        this.threadName = threadName;
     }
 
     @FXML
@@ -50,8 +45,8 @@ public class ThreadController implements ThreadEventsListener {
     private VBox frames;
 
     public void initialize() {
-        threadNameLabel.setText(String.format("Thread \"%s\"", threadName));
-        isDaemonLabel.setText(String.format("is daemon: %b", thread.isVMThreadDaemon()));
+        threadNameLabel.setText(String.format("Thread \"%s\"", thread.getName()));
+        isDaemonLabel.setText(String.format("is daemon: %b", thread.isDaemon()));
         cycleFreqField.setText(Integer.toString(thread.getCycleFrequency()));
     }
 
@@ -89,5 +84,10 @@ public class ThreadController implements ThreadEventsListener {
     @Override
     public void onFramePop(VMFrame frame) {
         frames.getChildren().remove(0);
+    }
+
+    @Override
+    public void onInstrExec(ExecutionContext context) {
+
     }
 }

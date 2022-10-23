@@ -5,6 +5,7 @@ import com.visualjava.types.*;
 import com.visualjava.vm.VMMethod;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -17,19 +18,15 @@ public class Executor {
 
     public final void execute(ExecutionContext context) {
         try {
-            System.out.println("\t" + context.frame().frameState());
-            System.out.println("executing [" + context.getInstr().getMnemonic() + "] for " + Thread.currentThread() + " in method " + context.getMethod());
+//            System.out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s] \t%s\n", new Date(), Thread.currentThread().getName(), context.frame().frameState());
+//            System.out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s] executing `%s`\n", new Date(), Thread.currentThread().getName(), context.getInstr().getMnemonic());
             instructionExecutor.getClass().getDeclaredMethod(
                     "impl_" + context.getInstr().getMnemonic(),
                     ExecutionContext.class
             ).invoke(instructionExecutor, context);
             context.getPCHandler().execute();
-        } catch (NoSuchMethodException e) {
-            throw new InternalError("Error in instruction lookup. Erroneous instruction mnemonic: " + context.getInstr().getMnemonic(), e);
-        } catch (InvocationTargetException e) {
-            throw new InternalError("Error in instruction invocation. Erroneous instruction mnemonic: " + context.getInstr().getMnemonic(), e);
-        } catch (IllegalAccessException e) {
-            throw new InternalError("Error in instruction access. Erroneous instruction mnemonic: " + context.getInstr().getMnemonic(), e);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 

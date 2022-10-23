@@ -1,11 +1,9 @@
 package com.visualjava.ui;
 
 import com.visualjava.types.VMType;
-import com.visualjava.vm.FrameEventsListener;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
 
-public class FrameUIElement extends AnchorPane implements FrameEventsListener {
+public class FrameUIElement extends AnchorPane {
     public static FrameUIElement create() {
         return new FrameUIElement();
     }

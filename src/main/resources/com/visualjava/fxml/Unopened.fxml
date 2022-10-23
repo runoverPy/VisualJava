@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.UnopenedController">
+    <children>
+        <Label layoutX="14.0" layoutY="14.0" text="No Runtime has been started." />
+        <Button fx:id="initRuntime" layoutX="454.0" layoutY="188.0" mnemonicParsing="false" text="Initialize Runtime" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="188.0" />
+        <VBox layoutX="14.0" layoutY="38.0" prefHeight="348.0" prefWidth="235.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="351.0" AnchorPane.topAnchor="38.0">
+            <children>
+                <BorderPane prefHeight="150.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                    <center>
+                        <ScrollPane fitToHeight="true" fitToWidth="true" BorderPane.alignment="CENTER">
+                            <content>
+                                <ListView fx:id="classPathList" prefHeight="200.0" prefWidth="200.0" style="-fx-border-style: none; -fx-background-color: none;" />
+                            </content>
+                        </ScrollPane>
+                    </center>
+                    <top>
+                        <ToolBar prefHeight="40.0" prefWidth="247.0" style="-fx-background-color: none;">
+                            <items>
+                                <Pane minWidth="0.0" prefHeight="30.0" HBox.hgrow="SOMETIMES" />
+                                <Button fx:id="cpyClassPath" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#cpyClassPath" prefHeight="24.0" prefWidth="29.0" style="-fx-background-radius: 0;" text="⎘" />
+                                <Pane maxWidth="100.0" prefHeight="30.0" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="uMvClassPath" disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#uMvClassPath" prefHeight="24.0" prefWidth="29.0" style="-fx-background-radius: 0;" text="ᐱ" />
+                                <Button fx:id="dMvClassPath" disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#dMvClassPath" prefHeight="24.0" prefWidth="29.0" style="-fx-background-radius: 0;" text="ᐯ" />
+                                <Button fx:id="delClassPath" disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#delClassPath" prefHeight="24.0" prefWidth="29.0" style="-fx-background-radius: 0;" text="-" />
+                                <Button fx:id="addClassPath" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#addClassPath" prefHeight="24.0" prefWidth="29.0" style="-fx-background-radius: 0;" text="+" textAlignment="CENTER" />
+                            </items>
+                        </ToolBar>
+                    </top>
+                </BorderPane>
+                <Separator prefWidth="200.0" visible="false" />
+                <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="202.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                    <content>
+                        <TreeView fx:id="classFileTree" prefHeight="200.0" prefWidth="200.0" showRoot="false" style="-fx-border-style: none; -fx-background-color: none;" />
+                    </content>
+                </ScrollPane>
+            </children>
+        </VBox>
+        <Group layoutX="257.0" layoutY="81.0" AnchorPane.rightAnchor="172.751953125" AnchorPane.topAnchor="81.0">
+            <children>
+                <Label text="main class" />
+                <TextField fx:id="mainClass" layoutY="16.0" />
+            </children>
+        </Group>
+    </children>
+</AnchorPane>

@@ -20,6 +20,7 @@ public class VMThread implements Runnable {
     private final AtomicBoolean killed = new AtomicBoolean(false);
 
     private final Thread innerThread;
+    private final ThreadEventsListener threadListener;
 
     public VMThread(VMRuntime runtime, String name, VMMethod runMethod, VMType[] args, boolean daemon) {
         this.runtime = runtime;
@@ -27,6 +28,7 @@ public class VMThread implements Runnable {
         this.stack = new VMStack();
         this.executor = new Executor();
         this.name = name;
+        this.threadListener = runtime.getRuntimeListener().makeThreadListener(this);
         stack.pushFrame(new VMFrame(runMethod, args));
         this.innerThread = new Thread(this);
         innerThread.start();
@@ -40,7 +42,7 @@ public class VMThread implements Runnable {
         boolean isPaused = false;
         long timeAtPause = 0L;
 
-        while (!stack.isComplete() && !killed.get()) {
+        while (!stack.isEmpty() && !killed.get()) {
             long presentTime = System.nanoTime();
             if ((presentTime - beginTime) / 1e9 >= 1d / cycleFrequency && !isPaused) {
                 doCycle();
@@ -67,7 +69,7 @@ public class VMThread implements Runnable {
 
     public void killThread() {
         if (!killed.get()) killed.set(true);
-        else throw new IllegalStateException("cannot kill thread, thread already killed");
+        else throw new IllegalStateException("cannot kill thread, thread already dead");
     }
 
     public void setCycleFrequency(int cycleFrequency) {
@@ -79,40 +81,40 @@ public class VMThread implements Runnable {
     }
 
     public void doCycle() {
-        VMFrame topFrame = stack.popFrame();
+        VMFrame currentFrame = stack.peekFrame();
         VMReference throwable;
-        if ((throwable = topFrame.checkForThrowable()) != null) {
-            topFrame = stack.popFrame();
-            topFrame.setThrowable(throwable);
-        } else {
-            executor.execute(new ExecutionContext(runtime, topFrame));
-
-            if (topFrame.checkForReturnValue()) {
-                VMType returnValue = topFrame.getReturnValue();
-                if (!stack.isComplete()) {
-                    topFrame = stack.popFrame();
-                    if (returnValue != null) topFrame.pshStack(returnValue);
-                } else {
-                    System.out.println();
-                    if (returnValue != null) System.out.println("return value: " + returnValue);
-                    System.out.println("execution complete, thread \"" + name + "\" closing");
-                    return;
-                }
-            }
-            VMMethod invokedMethod;
-            if ((invokedMethod = topFrame.getInvokedMethod()) != null) {
-                stack.pushFrame(topFrame);
-                VMType[] args = new VMType[invokedMethod.getNArgs()];
-                for (int i = args.length - 1; i >= 0; i--) {
-                    args[i] = topFrame.popStack();
-                }
-                topFrame = new VMFrame(invokedMethod, args);
-            }
+        if ((throwable = currentFrame.checkForThrowable()) != null) {
+            threadListener.onFramePop(currentFrame);
+            stack.popFrame();
+            stack.peekFrame().setThrowable(throwable);
+            return; // exception found and propagated. No more actions will be taken this cycle
         }
-        stack.pushFrame(topFrame);
+
+        ExecutionContext context = new ExecutionContext(runtime, currentFrame);
+        threadListener.onInstrExec(context);
+        executor.execute(context);
+
+        if (currentFrame.checkForReturnValue()) {
+            VMType returnValue = currentFrame.getReturnValue();
+            threadListener.onFramePop(currentFrame);
+            stack.popFrame();
+            if (returnValue != null) {
+                stack.peekFrame().pshStack(returnValue);
+            } else return;
+        }
+        VMMethod invokedMethod;
+        if ((invokedMethod = currentFrame.getInvokedMethod()) != null) {
+            VMType[] args = new VMType[invokedMethod.getNArgs()];
+            for (int i = args.length - 1; i >= 0; i--) {
+                args[i] = currentFrame.popStack();
+            }
+            VMFrame nextFrame = new VMFrame(invokedMethod, args);
+            threadListener.onFramePush(nextFrame);
+            stack.pushFrame(nextFrame);
+        }
     }
 
-    public boolean isVMThreadDaemon() {
+    public boolean isDaemon() {
         return daemon;
     }
 
