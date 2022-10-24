@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VisualJavaController implements RuntimeEventsListener {
+public class VisualJavaController {
     @FXML
     public BorderPane rootPane;
     @FXML
@@ -58,56 +58,6 @@ public class VisualJavaController implements RuntimeEventsListener {
         }
     }
 
-    public void addThread(VMThread thread) throws IOException {
-        AnchorPane threadPane = ThreadController.newThread(thread);
-        Tab threadTab = new Tab();
-        threadTab.setText(thread.getName());
-        threadTab.setClosable(false);
-        threadTab.setContent(threadPane);
-        threadContainer.getTabs().add(threadTab);
-    }
-
-    public void delThread(VMThread thread) {
-        threadContainer
-          .getTabs()
-          .stream()
-          .filter(tab -> tab.getText().equals(thread.getName()))
-          .findFirst()
-          .ifPresentOrElse(
-            threadTab -> threadContainer.getTabs().remove(threadTab),
-            () -> System.out.println("Cannot find thread \"" + thread.getName() + "\"")
-          );
-    }
-
-    @Override
-    public ThreadEventsListener makeThreadListener(VMThread thread) {
-        return null;
-    }
-
-    @Override
-    public void onThreadStart(VMThread thread) {
-        Platform.runLater(() -> {
-            try {
-                addThread(thread);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    @Override
-    public void onThreadDeath(VMThread thread) {
-        Platform.runLater(() -> delThread(thread));
-    }
-
-    @Override
-    public void onRuntimeExit() {
-
-    }
-
-    private final static class ClassPathPopup {
-    }
-
     private void onRuntimeStart() {
         FXMLLoader loader = new FXMLLoader();
         try {
@@ -119,6 +69,10 @@ public class VisualJavaController implements RuntimeEventsListener {
     }
 
     private void onRuntimeDeath() {
+
+    }
+
+    public class RuntimeAccessor {
 
     }
 }

@@ -102,14 +102,14 @@ public final class Executor {
 
 
         public static void impl_bipush(ExecutionContext context) {
-            byte value = (byte) context.getInstr().getParam("byte");
-            context.frame().pshStack(new VMByte(value));
+            int value = context.getInstr().getParam("byte");
+            context.frame().pshStack(new VMInt(value));
         }
 
 
         public static void impl_sipush(ExecutionContext context) {
-            short value = (short) context.getInstr().getParam("short");
-            context.frame().pshStack(new VMShort(value));
+            int value = context.getInstr().getParam("short");
+            context.frame().pshStack(new VMInt(value));
         }
 
 

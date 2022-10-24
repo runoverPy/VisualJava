@@ -36,6 +36,7 @@ public class VMThread {
             boolean isPaused = false;
             long timeAtPause = 0L;
 
+
             while (!stack.isEmpty() && !killed.get()) {
                 long presentTime = System.nanoTime();
                 if ((presentTime - beginTime) / 1e9 >= 1d / cycleFrequency && !isPaused) {
@@ -46,10 +47,16 @@ public class VMThread {
                 if (this.paused && !isPaused) {
                     isPaused = true;
                     timeAtPause = presentTime - beginTime;
+//                    wait();
                 }
                 if (!this.paused && isPaused) {
                     isPaused = false;
                     beginTime = System.nanoTime() + timeAtPause;
+                }
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
 

@@ -225,6 +225,6 @@ public class VMFrame {
     }
 
     public FrameUIElement getFrameUIElement() {
-        return new FrameUIElement();
+        return new FrameUIElement(this);
     }
 }

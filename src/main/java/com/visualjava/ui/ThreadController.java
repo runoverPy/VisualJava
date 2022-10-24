@@ -4,6 +4,7 @@ import com.visualjava.invoke.ExecutionContext;
 import com.visualjava.vm.ThreadEventsListener;
 import com.visualjava.vm.VMFrame;
 import com.visualjava.vm.VMThread;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
@@ -14,24 +15,14 @@ import javafx.scene.layout.VBox;
 import java.io.IOException;
 import java.util.*;
 
-public class ThreadController implements ThreadEventsListener {
-    public static AnchorPane newThread(VMThread thread) {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setControllerFactory(c -> {
-            if (c != ThreadController.class) throw new RuntimeException();
-            return new ThreadController(thread);
-        });
-        try {
-            return loader.load(ThreadController.class.getResourceAsStream("/com/visualjava/fxml/Thread.fxml"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+public class ThreadController {
+    private final RuntimeController.ThreadAccessor runtimeAccessor;
 
     private final VMThread thread;
 
-    public ThreadController(VMThread thread) {
+    public ThreadController(VMThread thread, RuntimeController.ThreadAccessor runtimeAccessor) {
         this.thread = thread;
+        this.runtimeAccessor = runtimeAccessor;
     }
 
     @FXML
@@ -40,7 +31,6 @@ public class ThreadController implements ThreadEventsListener {
     private Label isDaemonLabel;
     @FXML
     private TextField cycleFreqField;
-
     @FXML
     private VBox frames;
 
@@ -76,35 +66,20 @@ public class ThreadController implements ThreadEventsListener {
         }
     }
 
-    @Override
-    public void onFramePush(VMFrame frame) {
-        frames.getChildren().add(FrameUIElement.create());
-    }
-
-    @Override
-    public void onFramePop(VMFrame frame) {
-        frames.getChildren().remove(0);
-    }
-
-    @Override
-    public void onFreqChange(int newFreq) {
-        cycleFreqField.setText(Integer.toString(thread.getCycleFrequency()));
-    }
-
-    @Override
-    public void onInstrExec(ExecutionContext context) {
-
-    }
-
     public class ThreadEventsVisualizer implements ThreadEventsListener {
+        private final Map<VMFrame, FrameUIElement> frameElements = new HashMap<>();
+
         @Override
         public void onFramePush(VMFrame frame) {
-
+            FrameUIElement frameElement = FrameUIElement.create(frame);
+            frameElements.put(frame, frameElement);
+            Platform.runLater(() -> frames.getChildren().add(0, frameElement));
         }
 
         @Override
         public void onFramePop(VMFrame frame) {
-
+            FrameUIElement frameElement = frameElements.get(frame);
+            Platform.runLater(() -> frames.getChildren().remove(frameElement));
         }
 
         @Override

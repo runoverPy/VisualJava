@@ -56,7 +56,7 @@ public class RuntimeController {
 
         @Override
         public ThreadEventsListener makeThreadListener(VMThread thread) {
-            FXMLThreadBundle bundle = new FXMLThreadBundle(thread);
+            FXMLThreadBundle bundle = new FXMLThreadBundle(thread, new ThreadAccessor());
             threadBundles.put(thread, bundle);
             return bundle.controller.new ThreadEventsVisualizer();
         }
@@ -83,4 +83,6 @@ public class RuntimeController {
 
         }
     }
+
+    public class ThreadAccessor {}
 }
