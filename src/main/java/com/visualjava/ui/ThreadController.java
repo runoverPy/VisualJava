@@ -87,7 +87,34 @@ public class ThreadController implements ThreadEventsListener {
     }
 
     @Override
+    public void onFreqChange(int newFreq) {
+        cycleFreqField.setText(Integer.toString(thread.getCycleFrequency()));
+    }
+
+    @Override
     public void onInstrExec(ExecutionContext context) {
 
+    }
+
+    public class ThreadEventsVisualizer implements ThreadEventsListener {
+        @Override
+        public void onFramePush(VMFrame frame) {
+
+        }
+
+        @Override
+        public void onFramePop(VMFrame frame) {
+
+        }
+
+        @Override
+        public void onFreqChange(int newFreq) {
+            cycleFreqField.setText(Integer.toString(newFreq));
+        }
+
+        @Override
+        public void onInstrExec(ExecutionContext context) {
+
+        }
     }
 }

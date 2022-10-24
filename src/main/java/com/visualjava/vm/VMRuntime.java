@@ -29,9 +29,8 @@ public class VMRuntime {
 //        classPath = Path.of(classPathURL.getPath());
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        Thread.sleep(5000);
-        new VMRuntime("testfiles/", RuntimeEventsListener.makeRuntimePrinter()).init("Fibonacci", 16);
+    public static void main(String[] args) throws NoSuchMethodException {
+        new VMRuntime("testfiles/", RuntimeEventsListener.makeRuntimePrinter()).start("Fibonacci", 16);
     }
 
     private final Map<String, VMThread> threads;
@@ -56,23 +55,13 @@ public class VMRuntime {
         loader.registerClassLoadListener(methodPool);
     }
 
-    public void init(String className, int mainFreq) {
-        Thread runtimeThread = new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println("Thread: " + Thread.currentThread());
-            loader.loadIfNotAlready(className);
-            VMMethod mainMethod = methodPool.resolve("main", "([Ljava/lang/String;)V", className);
-            if (mainMethod == null) throw new NoSuchMethodError("Specified class has no main method, or the signature is wrong");
-            VMThread main = new VMThread(this, "main", mainMethod, new VMType[] { new VMNullReference() }, false);
-            main.setCycleFrequency(mainFreq);
-            threads.put("main", main);
-        }, "VisualJava Runtime Thread");
-        runtimeThread.setDaemon(true);
-        runtimeThread.start();
+    public void start(String className, int mainFreq) throws NoSuchMethodException {
+        loader.loadIfNotAlready(className);
+        VMMethod mainMethod = methodPool.resolve("main", "([Ljava/lang/String;)V", className);
+        if (mainMethod == null) throw new NoSuchMethodException("class `" + className + "` has no `void main(String[])` method");
+        VMThread main = new VMThread(this, "main", mainMethod, new VMType[] { new VMNullReference() }, false);
+        main.setCycleFrequency(mainFreq);
+        threads.put("main", main);
     }
 
     public Path resolveClassPath(String className) {
@@ -101,7 +90,7 @@ public class VMRuntime {
     }
 
     public void onThreadStart(VMThread thread) {
-        runtimeListener.onThreadSpawn(thread);
+        runtimeListener.onThreadStart(thread);
     }
 
     public void onThreadDeath(VMThread thread) {

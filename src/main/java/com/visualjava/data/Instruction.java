@@ -166,12 +166,12 @@ public class Instruction {
         return argc;
     }
 
-    public Object getParam(String paramName) {
-        return params.get(paramName);
-    }
+//    public Object getParam(String paramName) {
+//        return params.get(paramName);
+//    }
 
-    public <T> T getParam(String paramName, Class<T> _class) {
-        return (T) getParam(paramName);
+    public <T> T getParam(String paramName) {
+        return (T) params.get(paramName);
     }
 
     @Override

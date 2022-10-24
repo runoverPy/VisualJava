@@ -15,6 +15,7 @@ module com.visualjava {
 
     exports com.visualjava;
     exports com.visualjava.parser;
+    exports com.visualjava.types;
     exports com.visualjava.data;
     exports com.visualjava.vm;
     exports com.visualjava.data.constants;

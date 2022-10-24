@@ -85,7 +85,7 @@ public class VisualJavaController implements RuntimeEventsListener {
     }
 
     @Override
-    public void onThreadSpawn(VMThread thread) {
+    public void onThreadStart(VMThread thread) {
         Platform.runLater(() -> {
             try {
                 addThread(thread);

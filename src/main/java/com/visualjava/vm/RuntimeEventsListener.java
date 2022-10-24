@@ -34,6 +34,15 @@ public interface RuntimeEventsListener {
                     }
 
                     @Override
+                    public void onFreqChange(int newFreq) {
+                        out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s] frequency set to %d\n",
+                                new Date(),
+                                thread.getName(),
+                                newFreq
+                        );
+                    }
+
+                    @Override
                     public void onInstrExec(ExecutionContext context) {
                         out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s] executing %-20s %s\n",
                                 new Date(),
@@ -46,8 +55,8 @@ public interface RuntimeEventsListener {
             }
 
             @Override
-            public void onThreadSpawn(VMThread thread) {
-                out.printf("[%td-%<tm-%<tY %<tT %<tZ][RUNTIME] spawned thread %s\n", new Date(), thread.getName());
+            public void onThreadStart(VMThread thread) {
+                out.printf("[%td-%<tm-%<tY %<tT %<tZ][RUNTIME] starting thread %s\n", new Date(), thread.getName());
             }
 
             @Override
@@ -83,6 +92,12 @@ public interface RuntimeEventsListener {
                     }
 
                     @Override
+                    public void onFreqChange(int newFreq) {
+                        threadListener0.onFreqChange(newFreq);
+                        threadListener1.onFreqChange(newFreq);
+                    }
+
+                    @Override
                     public void onInstrExec(ExecutionContext context) {
                         threadListener0.onInstrExec(context);
                         threadListener1.onInstrExec(context);
@@ -91,9 +106,9 @@ public interface RuntimeEventsListener {
             }
 
             @Override
-            public void onThreadSpawn(VMThread thread) {
-                runtimeListener0.onThreadSpawn(thread);
-                runtimeListener1.onThreadSpawn(thread);
+            public void onThreadStart(VMThread thread) {
+                runtimeListener0.onThreadStart(thread);
+                runtimeListener1.onThreadStart(thread);
             }
 
             @Override
@@ -113,7 +128,7 @@ public interface RuntimeEventsListener {
 
     ThreadEventsListener makeThreadListener(VMThread thread);
 
-    void onThreadSpawn(VMThread thread);
+    void onThreadStart(VMThread thread);
     void onThreadDeath(VMThread thread);
     void onRuntimeExit();
 }

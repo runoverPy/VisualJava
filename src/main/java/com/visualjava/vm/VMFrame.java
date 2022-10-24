@@ -6,9 +6,9 @@ import com.visualjava.data.Instruction;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 import com.visualjava.ui.FrameUIElement;
-import javafx.scene.layout.AnchorPane;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Stack;
 
 public class VMFrame {
@@ -62,7 +62,7 @@ public class VMFrame {
 
     public VMReference checkForThrowable() {
         if (holdsThrowable) {
-            VMReference thowable = popStack(VMReference.class);
+            VMReference thowable = popStack();
             Integer handlerPC = excMapper.getHandlerPC(pc);
             if (handlerPC != null) {
                 setPC(handlerPC);
@@ -122,14 +122,10 @@ public class VMFrame {
         }
     }
 
-    public VMType popStack() {
+    public <T extends VMType> T popStack() {
         synchronized (stack) {
-            return stack.pop();
+            return (T) stack.pop();
         }
-    }
-
-    public <T extends VMType> T popStack(Class<T> _class) {
-        return (T) popStack();
     }
 
     public void putLocal(int index, VMType value) {
@@ -138,14 +134,10 @@ public class VMFrame {
         }
     }
 
-    public VMType getLocal(int index) {
+    public <T extends VMType> T getLocal(int index) {
         synchronized (locals) {
-            return locals[index];
+            return (T) locals[index];
         }
-    }
-
-    public <T extends VMType> T getLocal(int index, Class<T> _class) {
-        return (T) getLocal(index);
     }
 
     public int getPC() {
