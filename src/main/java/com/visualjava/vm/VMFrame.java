@@ -28,9 +28,11 @@ public class VMFrame {
     private final VMType[] locals;
     private final Stack<VMType> stack;
 
+    private final FrameEventsListener frameListener;
+
     private int pc = 0;
 
-    VMFrame(VMMethod method, VMType[] params) {
+    VMFrame(VMMethod method, VMType[] params, FrameEventsListener frameListener) {
         locals = new VMType[method.getMaxLocals()];
         System.arraycopy(params, 0, locals, 0, params.length);
         stack = new Stack<>();
@@ -40,6 +42,7 @@ public class VMFrame {
         this.fileName = method.getClassFileName();
         this.lineMapper = new CodeLineMapper(method.getLineNumberTable());
         this.excMapper = new ExceptionMapper(method.getExceptionInfo());
+        this.frameListener = frameListener;
     }
 
     public StackTraceElement getStackTraceElement() {
@@ -118,18 +121,21 @@ public class VMFrame {
 
     public void pshStack(VMType value) {
         synchronized (stack) {
+            frameListener.onStackPush(value);
             stack.push(value);
         }
     }
 
     public <T extends VMType> T popStack() {
         synchronized (stack) {
+            frameListener.onStackPop();
             return (T) stack.pop();
         }
     }
 
     public void putLocal(int index, VMType value) {
         synchronized (locals) {
+            frameListener.onLocalWrite(index, value);
             locals[index] = value;
         }
     }
@@ -150,6 +156,10 @@ public class VMFrame {
 
     public void setPC(int branch) {
         pc = branch;
+    }
+
+    public VMType[] getStackValues() {
+        return stack.toArray(VMType[]::new);
     }
 
     public String frameState() {

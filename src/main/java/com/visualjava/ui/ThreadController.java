@@ -1,6 +1,8 @@
 package com.visualjava.ui;
 
 import com.visualjava.invoke.ExecutionContext;
+import com.visualjava.types.VMType;
+import com.visualjava.vm.FrameEventsListener;
 import com.visualjava.vm.ThreadEventsListener;
 import com.visualjava.vm.VMFrame;
 import com.visualjava.vm.VMThread;
@@ -68,18 +70,42 @@ public class ThreadController {
 
     public class ThreadEventsVisualizer implements ThreadEventsListener {
         private final Map<VMFrame, FrameUIElement> frameElements = new HashMap<>();
+        private final Stack<FrameUIElement> activeFrames = new Stack<>();
+
+        @Override
+        public FrameEventsListener makeFrameListener() {
+            return new FrameEventsListener() {
+                @Override
+                public void onStackPush(VMType value) {
+
+                }
+
+                @Override
+                public void onStackPop() {
+
+                }
+
+                @Override
+                public void onLocalWrite(int index, VMType value) {
+
+                }
+            };
+        }
 
         @Override
         public void onFramePush(VMFrame frame) {
             FrameUIElement frameElement = FrameUIElement.create(frame);
             frameElements.put(frame, frameElement);
             Platform.runLater(() -> frames.getChildren().add(0, frameElement));
+            activeFrames.push(frameElement);
         }
 
         @Override
         public void onFramePop(VMFrame frame) {
             FrameUIElement frameElement = frameElements.get(frame);
             Platform.runLater(() -> frames.getChildren().remove(frameElement));
+            activeFrames.pop();
+            if (!activeFrames.empty()) Platform.runLater(activeFrames.peek()::update);
         }
 
         @Override
@@ -89,7 +115,7 @@ public class ThreadController {
 
         @Override
         public void onInstrExec(ExecutionContext context) {
-
+            Platform.runLater(activeFrames.peek()::update);
         }
     }
 }

@@ -5,10 +5,12 @@ import com.visualjava.invoke.Executor;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class VMThread {
+public class VMThread implements Runnable {
     private final String name;
     private final boolean daemon;
     private final VMStack stack;
@@ -26,44 +28,41 @@ public class VMThread {
         this.stack = new VMStack();
         this.name = name;
         this.threadListener = runtime.getRuntimeListener().makeThreadListener(this);
-        Thread innerThread = new Thread(() -> {
-            VMFrame rootFrame = new VMFrame(runMethod, args);
-            runtime.onThreadStart(this);
-            threadListener.onFramePush(rootFrame);
-            stack.pushFrame(rootFrame);
-            int cycleFrequency = this.cycleFrequency.get();
-            long beginTime = System.nanoTime();
-            boolean isPaused = false;
-            long timeAtPause = 0L;
-
-
-            while (!stack.isEmpty() && !killed.get()) {
-                long presentTime = System.nanoTime();
-                if ((presentTime - beginTime) / 1e9 >= 1d / cycleFrequency && !isPaused) {
-                    doCycle();
-                    beginTime = presentTime;
-                    cycleFrequency = this.cycleFrequency.get();
-                }
-                if (this.paused && !isPaused) {
-                    isPaused = true;
-                    timeAtPause = presentTime - beginTime;
-//                    wait();
-                }
-                if (!this.paused && isPaused) {
-                    isPaused = false;
-                    beginTime = System.nanoTime() + timeAtPause;
-                }
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (!killed.get()) killed.set(true);
-            runtime.onThreadDeath(this);
-        });
+        VMFrame rootFrame = new VMFrame(runMethod, args, threadListener.makeFrameListener());
+        stack.pushFrame(rootFrame);
+        threadListener.onFramePush(rootFrame);
+        Thread innerThread = new Thread(this);
         innerThread.start();
+    }
+
+    @Override
+    public void run() {
+        runtime.onThreadStart(this);
+        int cycleFrequency = this.cycleFrequency.get();
+        long beginTime = System.nanoTime();
+        boolean isPaused = false;
+        long timeAtPause = 0L;
+
+        // here lie the bodies of innumerable lost core cycles.
+        while (!stack.isEmpty() && !killed.get()) {
+            long presentTime = System.nanoTime();
+            if ((presentTime - beginTime) / 1e9 >= 1d / cycleFrequency && !isPaused) {
+                doCycle();
+                beginTime = presentTime;
+                cycleFrequency = this.cycleFrequency.get();
+            }
+            if (this.paused && !isPaused) {
+                isPaused = true;
+                timeAtPause = presentTime - beginTime;
+            }
+            if (!this.paused && isPaused) {
+                isPaused = false;
+                beginTime = System.nanoTime() + timeAtPause;
+            }
+        }
+
+        if (!killed.get()) killed.set(true);
+        runtime.onThreadDeath(this);
     }
 
     public void togglePause() {
@@ -113,7 +112,7 @@ public class VMThread {
             for (int i = args.length - 1; i >= 0; i--) {
                 args[i] = currentFrame.popStack();
             }
-            VMFrame nextFrame = new VMFrame(invokedMethod, args);
+            VMFrame nextFrame = new VMFrame(invokedMethod, args, threadListener.makeFrameListener());
             threadListener.onFramePush(nextFrame);
             stack.pushFrame(nextFrame);
         }
@@ -130,5 +129,46 @@ public class VMThread {
     @Override
     public String toString() {
         return "VMThread \"" + name + "\"";
+    }
+
+    private static class ThreadTimer {
+        private final Queue<Event> eventsQueue;
+
+        public ThreadTimer() {
+            this.eventsQueue = new LinkedList<>();
+        }
+
+        public void pause() {
+            synchronized (eventsQueue) {
+                eventsQueue.add(Event.PAUSE);
+                eventsQueue.notify();
+            }
+        }
+
+        public void kill() {
+            synchronized (eventsQueue) {
+                eventsQueue.add(Event.KILL);
+                eventsQueue.notify();
+            }
+        }
+
+        /**
+         * Method blocks the thread, and waits at until the timer is given an additional input, but at most `millis` milliseconds.
+         * @param millis the maximum amount of time this method may block thread execution
+         * @return The Event that caused the thread to unblock, or `Event.CONTINUE` if the time runs out
+         * @throws InterruptedException if the thread is interrupted
+         */
+        public Event await(long millis) throws InterruptedException {
+            synchronized (eventsQueue) {
+                eventsQueue.wait(millis);
+                Event event = eventsQueue.poll();
+                if (event == null) return Event.CONTINUE;
+                else return event;
+            }
+        }
+
+        public enum Event {
+            KILL, PAUSE, RESUME, CONTINUE
+        }
     }
 }

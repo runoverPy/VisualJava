@@ -1,35 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.paint.Color?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
 
-<TabPane side="BOTTOM" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.RuntimeController">
+<TabPane side="BOTTOM" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.visualjava.ui.RuntimeController">
    <tabs>
-       <Tab closable="false" style="-fx-background-radius: 0;" text="Console Output">
-         <content>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0">
-               <children>
-                  <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="14.0" layoutY="26.0" prefHeight="515.0" prefWidth="872.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="26.0">
-                     <content>
-                        <TextArea fx:id="terminal" editable="false" style="-fx-background-radius: 0; -fx-border-color: none; -fx-background-color: none;">
-                           <font>
-                              <Font name="Monospaced Regular" size="13.0" />
-                           </font>
-                        </TextArea>
-                     </content>
-                  </ScrollPane>
-                  <CheckBox fx:id="doWrap" layoutX="827.0" layoutY="5.0" mnemonicParsing="false" text="Wrap" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="5.0" />
-               </children>
-            </AnchorPane>
-         </content></Tab>
       <Tab closable="false" style="-fx-background-radius: 0;" text="User Interface [WIP]">
          <content>
             <SplitPane fx:id="contentRoot" dividerPositions="0.25, 0.625" focusTraversable="true" prefHeight="555.0" prefWidth="900.0">
@@ -65,5 +42,22 @@
             </SplitPane>
          </content>
       </Tab>
+       <Tab closable="false" style="-fx-background-radius: 0;" text="Console Output">
+         <content>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="14.0" layoutY="26.0" prefHeight="515.0" prefWidth="872.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="26.0">
+                     <content>
+                        <TextArea fx:id="terminal" editable="false" style="-fx-background-radius: 0; -fx-border-color: none; -fx-background-color: none;">
+                           <font>
+                              <Font name="Monospaced Regular" size="13.0" />
+                           </font>
+                        </TextArea>
+                     </content>
+                  </ScrollPane>
+                  <CheckBox fx:id="doWrap" layoutX="827.0" layoutY="5.0" mnemonicParsing="false" text="Wrap" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="5.0" />
+               </children>
+            </AnchorPane>
+         </content></Tab>
    </tabs>
 </TabPane>

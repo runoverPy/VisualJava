@@ -1,22 +1,12 @@
 package com.visualjava.ui;
 
-import com.visualjava.vm.RuntimeEventsListener;
-import com.visualjava.vm.ThreadEventsListener;
 import com.visualjava.vm.VMRuntime;
-import com.visualjava.vm.VMThread;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.*;
-
-import javafx.event.ActionEvent;
+import javafx.stage.FileChooser;
 
 import java.io.IOException;
 import java.nio.file.Path;

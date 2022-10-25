@@ -6,10 +6,7 @@ import com.visualjava.types.VMType;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class VMRuntime {
     public static List<Path> parseClassPaths(String classPathsRaw) {
@@ -33,7 +30,7 @@ public class VMRuntime {
         new VMRuntime("testfiles/", RuntimeEventsListener.makeRuntimePrinter()).start("Fibonacci", 16);
     }
 
-    private final Map<String, VMThread> threads;
+    private final List<VMThread> threads;
     private final VMMethodPool methodPool;
     private final VMMemory memory;
     private final VMClassLoader loader;
@@ -46,7 +43,7 @@ public class VMRuntime {
     }
 
     public VMRuntime(List<Path> classPath, RuntimeEventsListener runtimeListener) {
-        this.threads = new HashMap<>();
+        this.threads = new LinkedList<>();
         this.methodPool = new VMMethodPool();
         this.memory = new VMMemoryImpl();
         this.loader = new VMClassLoader(this);
@@ -61,7 +58,6 @@ public class VMRuntime {
         if (mainMethod == null) throw new NoSuchMethodException("class `" + className + "` has no `void main(String[])` method");
         VMThread main = new VMThread(this, "main", mainMethod, new VMType[] { new VMNullReference() }, false);
         main.setCycleFrequency(mainFreq);
-        threads.put("main", main);
     }
 
     public Path resolveClassPath(String className) {
@@ -91,16 +87,17 @@ public class VMRuntime {
 
     public void onThreadStart(VMThread thread) {
         runtimeListener.onThreadStart(thread);
+        threads.add(thread);
     }
 
     public void onThreadDeath(VMThread thread) {
-        threads.remove(thread.getName());
+        threads.remove(thread);
         runtimeListener.onThreadDeath(thread);
-        if (threads.values().stream().allMatch(VMThread::isDaemon)) endRuntime();
+        if (threads.stream().allMatch(VMThread::isDaemon)) endRuntime();
     }
 
     private void endRuntime() {
-        threads.values().forEach(VMThread::killThread);
+        threads.forEach(VMThread::killThread);
         runtimeListener.onRuntimeExit();
     }
 

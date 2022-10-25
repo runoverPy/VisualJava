@@ -1,6 +1,7 @@
 package com.visualjava.vm;
 
 import com.visualjava.invoke.ExecutionContext;
+import com.visualjava.types.VMType;
 
 import java.io.PrintStream;
 import java.util.Date;
@@ -12,9 +13,47 @@ public interface RuntimeEventsListener {
 
     static RuntimeEventsListener makeRuntimePrinter(PrintStream out) {
         return new RuntimeEventsListener() {
+            int frames = 0;
             @Override
             public ThreadEventsListener makeThreadListener(VMThread thread) {
+
                 return new ThreadEventsListener() {
+
+                    @Override
+                    public FrameEventsListener makeFrameListener() {
+                        return new FrameEventsListener() {
+                            @Override
+                            public void onStackPush(VMType value) {
+                                out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s | FRAME #%d] stack pushed value %s\n",
+                                  new Date(),
+                                  thread.getName(),
+                                  frames,
+                                  value.toString()
+                                );
+                            }
+
+                            @Override
+                            public void onStackPop() {
+                                out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s | FRAME #%d] stack popped value\n",
+                                  new Date(),
+                                  thread.getName(),
+                                  frames
+                                );
+                            }
+
+                            @Override
+                            public void onLocalWrite(int index, VMType value) {
+                                out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s | FRAME #%d] wrote value %s to local #%d\n",
+                                  new Date(),
+                                  thread.getName(),
+                                  frames,
+                                  value.toString(),
+                                  index
+                                );
+                            }
+                        };
+                    }
+
                     @Override
                     public void onFramePush(VMFrame frame) {
                         out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s] pushed frame %s\n",
@@ -22,6 +61,7 @@ public interface RuntimeEventsListener {
                                 thread.getName(),
                                 frame.getMethod().getMethodName()
                         );
+                        frames++;
                     }
 
                     @Override
@@ -31,6 +71,7 @@ public interface RuntimeEventsListener {
                                 thread.getName(),
                                 frame.getMethod().getMethodName()
                         );
+                        frames--;
                     }
 
                     @Override
@@ -79,6 +120,32 @@ public interface RuntimeEventsListener {
                 ThreadEventsListener threadListener1 = runtimeListener1.makeThreadListener(thread);
 
                 return new ThreadEventsListener() {
+                    @Override
+                    public FrameEventsListener makeFrameListener() {
+                        FrameEventsListener frameListener0 = threadListener0.makeFrameListener();
+                        FrameEventsListener frameListener1 = threadListener1.makeFrameListener();
+
+                        return new FrameEventsListener() {
+                            @Override
+                            public void onStackPush(VMType value) {
+                                frameListener0.onStackPush(value);
+                                frameListener1.onStackPush(value);
+                            }
+
+                            @Override
+                            public void onStackPop() {
+                                frameListener0.onStackPop();
+                                frameListener1.onStackPop();
+                            }
+
+                            @Override
+                            public void onLocalWrite(int index, VMType value) {
+                                frameListener0.onLocalWrite(index, value);
+                                frameListener1.onLocalWrite(index, value);
+                            }
+                        };
+                    }
+
                     @Override
                     public void onFramePush(VMFrame frame) {
                         threadListener0.onFramePush(frame);

@@ -23,10 +23,10 @@ public class RuntimeController {
     public void initialize() {
         doWrap.selectedProperty().addListener(((observe, oldValue, newValue) -> terminal.setWrapText(newValue)));
         out = makePrintStream(terminal);
-        runtime = new VMRuntime("/home/eric/IdeaProjects/VisualJava/testfiles", RuntimeEventsListener.forkRuntimeListener(RuntimeEventsListener.makeRuntimePrinter(out), new RuntimeEventsVisualizer()));
-//        runtime = new VMRuntime("/home/eric/IdeaProjects/VisualJava/testfiles", new RuntimeEventsVisualizer());
+//        runtime = new VMRuntime("/home/eric/IdeaProjects/VisualJava/testfiles", RuntimeEventsListener.forkRuntimeListener(RuntimeEventsListener.makeRuntimePrinter(out), new RuntimeEventsVisualizer()));
+        runtime = new VMRuntime("/home/eric/IdeaProjects/VisualJava/testfiles", new RuntimeEventsVisualizer());
         try {
-            runtime.start("Fibonacci", 16);
+            runtime.start("Fibonacci", 4);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e); // go back to unopened screen, inform user of problem
         }
