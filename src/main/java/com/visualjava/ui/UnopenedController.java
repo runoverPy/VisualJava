@@ -1,5 +1,6 @@
 package com.visualjava.ui;
 
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -13,6 +14,8 @@ import java.nio.file.*;
 import java.util.*;
 
 public class UnopenedController {
+    public static final PseudoClass problem = PseudoClass.getPseudoClass("problem");
+
     @FXML
     public Button addClassPath;
     @FXML
@@ -25,11 +28,20 @@ public class UnopenedController {
     public Button cpyClassPath;
     @FXML
     public ListView<String> classPathList;
+//    @FXML
+//    public ListView<TreeItem<String>> classPathListTree;
+//    @FXML
+//    public ListTreeView<String> classPathListTree;
     @FXML
     public TreeView<String> classFileTree;
-    private TreeItem<String> classFileTreeRoot;
     @FXML
     public TextField mainClass;
+
+    private final VisualJavaController.Accessor accessor;
+
+    public UnopenedController(VisualJavaController.Accessor accessor) {
+        this.accessor = accessor;
+    }
 
     @FXML
     public void addClassPath(ActionEvent event) {
@@ -37,7 +49,9 @@ public class UnopenedController {
         if (classFile == null) return;
         Path classPath = classFile.toPath();
         classPathList.getItems().add(classPath.toString());
-        classFileTreeRoot.getChildren().add(getClassTree(classPath, true));
+        TreeItem<String> classPathTreeItem = getClassTree(classPath, true);
+//        classFileTreeRoot.getChildren().add(classPathTreeItem);
+//        classPathListTree.getItems().add(classPathTreeItem);
     }
 
     @FXML
@@ -45,12 +59,12 @@ public class UnopenedController {
         String rmPath = classPathList.getSelectionModel().getSelectedItem();
         if (rmPath == null) return;
         classPathList.getItems().remove(rmPath);
-        classFileTreeRoot
-                .getChildren()
-                .stream()
-                .filter(item -> item.getValue().equals(rmPath))
-                .findFirst()
-                .ifPresent(item -> classFileTreeRoot.getChildren().remove(item));
+//        classFileTreeRoot
+//                .getChildren()
+//                .stream()
+//                .filter(item -> item.getValue().equals(rmPath))
+//                .findFirst()
+//                .ifPresent(item -> classFileTreeRoot.getChildren().remove(item));
     }
 
     @FXML
@@ -58,8 +72,8 @@ public class UnopenedController {
         int curIndex = classPathList.getSelectionModel().getSelectedIndex();
         String listItem = classPathList.getItems().remove(curIndex);
         classPathList.getItems().add(curIndex - 1, listItem);
-        TreeItem<String> treeItem = classFileTreeRoot.getChildren().remove(curIndex);
-        classFileTreeRoot.getChildren().add(curIndex - 1, treeItem);
+//        TreeItem<String> treeItem = classFileTreeRoot.getChildren().remove(curIndex);
+//        classFileTreeRoot.getChildren().add(curIndex - 1, treeItem);
         classPathList.getSelectionModel().select(curIndex - 1);
     }
 
@@ -68,8 +82,8 @@ public class UnopenedController {
         int curIndex = classPathList.getSelectionModel().getSelectedIndex();
         String listItem = classPathList.getItems().remove(curIndex);
         classPathList.getItems().add(curIndex + 1, listItem);
-        TreeItem<String> treeItem = classFileTreeRoot.getChildren().remove(curIndex);
-        classFileTreeRoot.getChildren().add(curIndex + 1, treeItem);
+//        TreeItem<String> treeItem = classFileTreeRoot.getChildren().remove(curIndex);
+//        classFileTreeRoot.getChildren().add(curIndex + 1, treeItem);
         classPathList.getSelectionModel().select(curIndex + 1); // /home/eric/IdeaProjects/VisualJava/testfiles:/home/eric/IdeaProjects/VisualJava/target/classes
     }
 
@@ -85,32 +99,59 @@ public class UnopenedController {
 
     @FXML
     public void startRuntime() {
-
-    }
-
-    @FXML
-    public void echo(ListView.EditEvent<String> event) {
-        System.out.println(event);
+        boolean error = false;
+        // check if mainClass is not empty
+        String mainClass = this.mainClass.getText();
+        if (mainClass.equals("")) {
+            System.err.println("Choose a `main`-class");
+            error = true;
+        }
+        // check if classpath is not empty
+        List<Path> classPath = classPathList.getItems().stream().map(Path::of).toList();
+        if (classPath.isEmpty()) {
+            System.err.println("Select files for the classpath");
+            error = true;
+        }
+        // check if class exists in classpath
+        Path mainClassPath = Path.of(mainClass.replace(".", "/") + ".class");
+        if (classPath.stream().noneMatch(path -> Files.exists(path.resolve(mainClassPath)))) {
+            System.err.println("main class not found on classpath");
+            error = true;
+        }
+        if (error) {
+            return;
+        }
+        System.out.println("Runtime initializing");
+        accessor.initRuntime(mainClass, classPath);
     }
 
     public void initialize() {
-        classFileTreeRoot = new TreeItem<>();
-        classFileTree.setRoot(classFileTreeRoot);
+//        classFileTreeRoot = new TreeItem<>();
+//        classFileTree.setRoot(classFileTreeRoot);
         classPathList.getSelectionModel().selectedIndexProperty().addListener((observe, oldValue, newValue) -> {
             delClassPath.setDisable(newValue == null);
             uMvClassPath.setDisable(newValue == null || (int) newValue <= 0);
             dMvClassPath.setDisable(newValue == null || (int) newValue >= classPathList.getItems().size() - 1);
         });
+
+        classPathList.getSelectionModel().selectedItemProperty().addListener((observe, oldValue, newValue) -> {
+            classFileTree.setRoot(getClassTree(Path.of(newValue), true));
+        });
+//        classPathListTree.setCellFactory(ListTreeCell::new);
+        ContextMenu mainClassValues = new ContextMenu();
+        mainClassValues.getItems().add(new MenuItem("Fibonacci"));
+        mainClass.setContextMenu(mainClassValues);
     }
 
     private TreeItem<String> getClassTree(Path path, boolean root) {
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.class");
         TreeItem<String> treeNode = root ? new TreeItem<>(path.toAbsolutePath().toString()) : new TreeItem<>(path.getFileName().toString());
         if (Files.isDirectory(path)) {
-            Map<String, String> nestedClasses = new HashMap<>();
+            Map<String, String> nestedClasses = new HashMap<>(); // TODO: 26.10.22 make nested classes appear as children of their outer class
             try {
                 List<TreeItem<String>> treeItems = Files
                         .list(path)
+                        .peek(System.out::println)
                         .map(p -> getClassTree(p, false))
                         .filter(Objects::nonNull)
                         .toList();
@@ -128,6 +169,7 @@ public class UnopenedController {
             }
         } else {
             if (matcher.matches(path.getFileName())) {
+                treeNode.setValue(treeNode.getValue().replace(".class", ""));
                 return treeNode;
             }
             else return null;

@@ -1,21 +1,18 @@
 package com.visualjava.ui;
 
+import com.visualjava.invoke.ExecutionContext;
 import com.visualjava.types.VMType;
+import com.visualjava.vm.events.FrameEventsListener;
 import com.visualjava.vm.VMFrame;
-import javafx.geometry.Insets;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-public class FrameUIElement extends AnchorPane {
+public class FrameUIElement extends HBox {
     private final VMFrame frame;
+    private final Label instr;
     private final VBox stack;
 
     public static FrameUIElement create(VMFrame frame) {
@@ -25,30 +22,41 @@ public class FrameUIElement extends AnchorPane {
     public FrameUIElement(VMFrame frame) {
         this.frame = frame;
         Label frameLabel = new Label(frame.getMethod().getMethodName());
-        setLeftAnchor(frameLabel, 0d);
-        setBottomAnchor(frameLabel, 0d);
         getChildren().add(frameLabel);
-        Separator frameSeparator = new Separator();
-        setLeftAnchor(frameSeparator, 0d);
-        setRightAnchor(frameSeparator, 0d);
-        setTopAnchor(frameSeparator, 0d);
-        getChildren().add(frameSeparator);
+        Separator frameSeparator1 = new Separator();
+        getChildren().add(frameSeparator1);
+        this.instr = new Label(frame.getCurrentInstruction().getMnemonic());
+        getChildren().add(instr);
         stack = new VBox();
         stack.setAlignment(Pos.BOTTOM_LEFT);
         stack.setPrefSize(100, getPrefHeight());
-        setRightAnchor(stack, 0d);
-        setBottomAnchor(stack, 0d);
         getChildren().add(stack);
     }
 
-    public void update() {
-        stack.getChildren().clear();
-        List<Label> items = Arrays.stream(frame.getStackValues()).map(val -> new Label(val.toString())).collect(Collectors.toList());
-        Collections.reverse(items);
-        stack.getChildren().addAll(items);
-    }
+    public class FrameEventsVisualizer implements FrameEventsListener {
+        @Override
+        public void onStackPush(VMType value) {
+            Platform.runLater(() -> stack.getChildren().add(0, new Label(value.toString())));
+        }
 
-    private void pushStack() {}
-    private void popStack() {}
-    private void putLocal(int index, VMType value) {}
+        @Override
+        public void onStackPop() {
+            Platform.runLater(() -> {
+                int index = stack.getChildren().size() - 1;
+                stack.getChildren().remove(index);
+            });
+        }
+
+        @Override
+        public void onLocalWrite(int index, VMType value) {
+
+        }
+
+        @Override
+        public void onInstrExec(ExecutionContext context) {
+            Platform.runLater(() -> {
+                    instr.setText(context.getInstr().getMnemonic());
+            });
+        }
+    }
 }

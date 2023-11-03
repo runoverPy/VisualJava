@@ -50,6 +50,7 @@
                     <Color red="0.625" green="0.625" blue="0.625" fx:id="x4" />
                 </textFill>
             </Label>
+            <Button mnemonicParsing="false" onAction="#printStackTrace" onMouseEntered="#printStackTrace" text="test" />
             <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
             <Label font="$x3" maxWidth="-1.0" text="Right status" textFill="$x4" HBox.hgrow="NEVER" />
         </children>
@@ -110,36 +111,6 @@
         </MenuBar>
    </top>
    <center>
-        <SplitPane fx:id="contentRoot" dividerPositions="0.25, 0.625" focusTraversable="true" prefHeight="555.0" prefWidth="900.0">
-        <items>
-            <AnchorPane>
-                <children>
-                    <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" minWidth="60.0" style="&#10;" text="Master" textAlignment="CENTER" wrapText="false">
-                        <font>
-                            <Font size="18.0" fx:id="x1" />
-                        </font>
-                        <textFill>
-                            <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
-                        </textFill>
-                    </Label>
-                </children>
-            </AnchorPane>
-            <AnchorPane style="-fx-background-color: #efefef;">
-                <children>
-                    <Label layoutX="14.0" layoutY="14.0" text="Threads" textFill="#9f9f9f">
-                        <font>
-                            <Font size="18.0" />
-                        </font>
-                    </Label>
-                    <TabPane fx:id="threadContainer" layoutY="50.0" prefHeight="621.0" prefWidth="390.0" style="-fx-opacity: 0;" styleClass=".tab-pane .tab-header-area .tab-header-background" stylesheets="@/hidden_tab_header.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
-            </children>
-        </AnchorPane>
-        <AnchorPane>
-            <children>
-                <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-            </children>
-        </AnchorPane>
-    </items>
-    </SplitPane>
+      <TabPane fx:id="mainContainer" prefHeight="200.0" prefWidth="200.0" side="BOTTOM" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>

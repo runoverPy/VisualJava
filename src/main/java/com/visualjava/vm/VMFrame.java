@@ -3,12 +3,12 @@ package com.visualjava.vm;
 import com.visualjava.CodeLineMapper;
 import com.visualjava.ExceptionMapper;
 import com.visualjava.data.Instruction;
+import com.visualjava.invoke.ExecutionContext;
 import com.visualjava.types.VMReference;
 import com.visualjava.types.VMType;
-import com.visualjava.ui.FrameUIElement;
+import com.visualjava.vm.events.FrameEventsListener;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Stack;
 
 public class VMFrame {
@@ -32,7 +32,7 @@ public class VMFrame {
 
     private int pc = 0;
 
-    VMFrame(VMMethod method, VMType[] params, FrameEventsListener frameListener) {
+    VMFrame(VMMethod method, VMType[] params, VMThread thread) {
         locals = new VMType[method.getMaxLocals()];
         System.arraycopy(params, 0, locals, 0, params.length);
         stack = new Stack<>();
@@ -42,7 +42,7 @@ public class VMFrame {
         this.fileName = method.getClassFileName();
         this.lineMapper = new CodeLineMapper(method.getLineNumberTable());
         this.excMapper = new ExceptionMapper(method.getExceptionInfo());
-        this.frameListener = frameListener;
+        this.frameListener = thread.getThreadListener().makeFrameListener(this);
     }
 
     public StackTraceElement getStackTraceElement() {
@@ -54,13 +54,12 @@ public class VMFrame {
         );
     }
 
-    public boolean setThrowable(VMReference throwable) {
+    public void setThrowable(VMReference throwable) {
         if (!holdsThrowable) {
             holdsThrowable = true;
             emptyStack();
             pshStack(throwable);
-            return true;
-        } else return false;
+        }
     }
 
     public VMReference checkForThrowable() {
@@ -77,12 +76,11 @@ public class VMFrame {
         return null;
     }
 
-    public boolean setReturnValue(VMType returnValue) {
+    public void setReturnValue(VMType returnValue) {
         if (!isReturning) {
             isReturning = true;
             this.returnValue = returnValue;
-            return true;
-        } else return false;
+        }
     }
 
     public boolean checkForReturnValue() {
@@ -93,10 +91,9 @@ public class VMFrame {
         return returnValue;
     }
 
-    public boolean setInvokedMethod(VMMethod method) {
-        if (this.invokedMethod != null) return false;
+    public void setInvokedMethod(VMMethod method) {
+        if (this.invokedMethod != null) return;
         this.invokedMethod = method;
-        return true;
     }
 
     public VMMethod getInvokedMethod() {
@@ -150,16 +147,8 @@ public class VMFrame {
         return pc;
     }
 
-    public void incPC(int offset) {
-        pc += offset;
-    }
-
     public void setPC(int branch) {
         pc = branch;
-    }
-
-    public VMType[] getStackValues() {
-        return stack.toArray(VMType[]::new);
     }
 
     public String frameState() {
@@ -173,6 +162,10 @@ public class VMFrame {
         }
 
         return "stack: " + arr + ", locals: " + loc;
+    }
+
+    public void onInstrExec(ExecutionContext context) {
+        frameListener.onInstrExec(context);
     }
 
     public class PCHandler {
@@ -232,9 +225,5 @@ public class VMFrame {
                 return pc + offset;
             }
         }
-    }
-
-    public FrameUIElement getFrameUIElement() {
-        return new FrameUIElement(this);
     }
 }

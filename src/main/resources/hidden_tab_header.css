@@ -1,0 +1,21 @@
+.tab-pane .tab-header-area .tab-header-background {
+	-fx-opacity: 0;
+}
+
+.tab-pane .tab-header-area .headers-region .tab {
+}
+
+.text-field .error {
+    -fx-text-box-border: red;
+    -fx-focus-color: red;
+}
+
+.button #runtime-kill {
+    -fx-background-color: linear-gradient(to top, #a4052d 0%, #b30825 50%, #dd1111 100%);
+    -fx-text-fill: white;
+}
+
+.button #runtime-kill :safe {
+    -fx-background-color: #c0f0c0;
+    -fx-text-fill: black;
+}

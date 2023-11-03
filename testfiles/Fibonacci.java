@@ -1,6 +1,6 @@
 class Fibonacci {
     public static void main(String[] args) {
-        fibonacci_iterative(8);
+        fibonacci_iterative(5);
     }
 
     public static int fibonacci_iterative(int iters) {

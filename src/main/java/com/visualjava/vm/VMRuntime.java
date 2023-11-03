@@ -2,6 +2,7 @@ package com.visualjava.vm;
 
 import com.visualjava.types.VMNullReference;
 import com.visualjava.types.VMType;
+import com.visualjava.vm.events.RuntimeEventsListener;
 
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -20,12 +21,6 @@ public class VMRuntime {
         return classPaths;
     }
 
-    static {
-//        URL classPathURL = VMRuntime.class.getResource("/com/visualjava");
-//        if (classPathURL == null) throw new RuntimeException("could not find classpath");
-//        classPath = Path.of(classPathURL.getPath());
-    }
-
     public static void main(String[] args) throws NoSuchMethodException {
         new VMRuntime("testfiles/", RuntimeEventsListener.makeRuntimePrinter()).start("Fibonacci", 16);
     }
@@ -35,6 +30,7 @@ public class VMRuntime {
     private final VMMemory memory;
     private final VMClassLoader loader;
     private final List<Path> classPath;
+    private boolean exited = false;
 
     private final RuntimeEventsListener runtimeListener;
 
@@ -43,6 +39,7 @@ public class VMRuntime {
     }
 
     public VMRuntime(List<Path> classPath, RuntimeEventsListener runtimeListener) {
+        System.out.println(classPath);
         this.threads = new LinkedList<>();
         this.methodPool = new VMMethodPool();
         this.memory = new VMMemoryImpl();
@@ -54,6 +51,8 @@ public class VMRuntime {
 
     public void start(String className, int mainFreq) throws NoSuchMethodException {
         loader.loadIfNotAlready(className);
+        System.out.println(methodPool.toString());
+        new Exception().printStackTrace();
         VMMethod mainMethod = methodPool.resolve("main", "([Ljava/lang/String;)V", className);
         if (mainMethod == null) throw new NoSuchMethodException("class `" + className + "` has no `void main(String[])` method");
         VMThread main = new VMThread(this, "main", mainMethod, new VMType[] { new VMNullReference() }, false);
@@ -99,9 +98,19 @@ public class VMRuntime {
     private void endRuntime() {
         threads.forEach(VMThread::killThread);
         runtimeListener.onRuntimeExit();
+        exited = true;
+    }
+
+    public boolean hasExited() {
+        return exited;
     }
 
     public RuntimeEventsListener getRuntimeListener() {
         return runtimeListener;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

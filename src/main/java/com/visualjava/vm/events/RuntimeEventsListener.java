@@ -1,7 +1,9 @@
-package com.visualjava.vm;
+package com.visualjava.vm.events;
 
 import com.visualjava.invoke.ExecutionContext;
 import com.visualjava.types.VMType;
+import com.visualjava.vm.VMFrame;
+import com.visualjava.vm.VMThread;
 
 import java.io.PrintStream;
 import java.util.Date;
@@ -20,7 +22,7 @@ public interface RuntimeEventsListener {
                 return new ThreadEventsListener() {
 
                     @Override
-                    public FrameEventsListener makeFrameListener() {
+                    public FrameEventsListener makeFrameListener(VMFrame frame) {
                         return new FrameEventsListener() {
                             @Override
                             public void onStackPush(VMType value) {
@@ -49,6 +51,16 @@ public interface RuntimeEventsListener {
                                   frames,
                                   value.toString(),
                                   index
+                                );
+                            }
+
+                            @Override
+                            public void onInstrExec(ExecutionContext context) {
+                                out.printf("[%td-%<tm-%<tY %<tT %<tZ][THREAD %s | FRAME #%d] executing `%s`",
+                                        new Date(),
+                                        thread.getName(),
+                                        frames,
+                                        context.getInstr().getMnemonic()
                                 );
                             }
                         };
@@ -121,9 +133,9 @@ public interface RuntimeEventsListener {
 
                 return new ThreadEventsListener() {
                     @Override
-                    public FrameEventsListener makeFrameListener() {
-                        FrameEventsListener frameListener0 = threadListener0.makeFrameListener();
-                        FrameEventsListener frameListener1 = threadListener1.makeFrameListener();
+                    public FrameEventsListener makeFrameListener(VMFrame frame) {
+                        FrameEventsListener frameListener0 = threadListener0.makeFrameListener(frame);
+                        FrameEventsListener frameListener1 = threadListener1.makeFrameListener(frame);
 
                         return new FrameEventsListener() {
                             @Override
@@ -142,6 +154,12 @@ public interface RuntimeEventsListener {
                             public void onLocalWrite(int index, VMType value) {
                                 frameListener0.onLocalWrite(index, value);
                                 frameListener1.onLocalWrite(index, value);
+                            }
+
+                            @Override
+                            public void onInstrExec(ExecutionContext context) {
+                                frameListener0.onInstrExec(context);
+                                frameListener1.onInstrExec(context);
                             }
                         };
                     }

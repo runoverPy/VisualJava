@@ -42,4 +42,11 @@ public class VMMethodPool implements ClassLoadListener {
     public void onClassLoad(ClassData classData) {
         loadClass(classData);
     }
+
+    @Override
+    public String toString() {
+        return "VMMethodPool{" +
+                "loadedMethods=" + loadedMethods +
+                '}';
+    }
 }

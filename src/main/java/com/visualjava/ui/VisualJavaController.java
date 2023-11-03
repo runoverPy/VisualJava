@@ -1,68 +1,101 @@
 package com.visualjava.ui;
 
-import com.visualjava.vm.VMRuntime;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class VisualJavaController {
     @FXML
     public BorderPane rootPane;
     @FXML
-    public TabPane threadContainer;
-    private final FileChooser fileChooser = new FileChooser();
-    private final List<Path> classPath = new ArrayList<>();
-    private VMRuntime runtime;
+    public TabPane mainContainer;
 
-//    private final Terminal terminal;
-
-    public VisualJavaController() {
-//        this.terminal = new Terminal();
-    }
+    private final Map<RuntimeController, Tab> runtimeTabs = new HashMap<>();
 
     public void initialize() {
-//        PrintStream
-//          out = terminal.createOutStream(),
-//          err = terminal.createErrStream();
-//        err.println("This feature is useless, there is currenty no plan to implement objects so anything using Strings and PrintStreams are kinda useless");
-//        out.println("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.");
-//        List<File> chosenFile = fileChooser.showOpenMultipleDialog(null);
-//        classPath.add(new DirectoryChooser().showDialog(null).toPath());
-//        runtime = new VMRuntime(classPath);
-//        runtime.init("fibonacci");
-//        runtime.setRuntimeListener(this);
-
+        System.err.println("initializing");
         try {
             FXMLLoader loader = new FXMLLoader();
-            rootPane.centerProperty().set(loader.load(getClass().getResourceAsStream("/com/visualjava/fxml/Runtime.fxml")));
+            loader.setControllerFactory(c -> {
+                if (c != UnopenedController.class) throw new RuntimeException();
+                return new UnopenedController(new Accessor());
+            });
+            mainContainer.getTabs().add(new Tab("Start Runtimes", loader.load(getClass().getResourceAsStream("/com/visualjava/fxml/Unopened.fxml"))));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void onRuntimeStart() {
-        FXMLLoader loader = new FXMLLoader();
-        try {
-            Node runtimeUI = loader.load(getClass().getResourceAsStream(""));
-            Object runtimeController = loader.getController();
-        } catch (IOException e) {
-            throw new RuntimeException("failed to load critical file", e);
+    public class Accessor {
+        public void initRuntime(String mainClass, List<Path> classPath) {
+            // something something start a new runtime and add it to a list
+            // this method will not do complicated verification, and assume the mainClass is present on the classPath and
+            // the class name is well-formed
+            FXMLLoader loader = new FXMLLoader();
+            loader.setControllerFactory(c -> {
+                if (c != RuntimeController.class) throw new RuntimeException();
+                return new RuntimeController(mainClass, classPath, new Accessor());
+            });
+            try {
+                Node root = loader.load(getClass().getResourceAsStream("/com/visualjava/fxml/Runtime.fxml"));
+                RuntimeController controller = loader.getController();
+                Tab runtimeTab = new Tab("Runtime #" + runtimeTabs.size(), root);
+                runtimeTabs.put(controller, runtimeTab);
+                Platform.runLater(() -> {
+                    mainContainer.getTabs().add(runtimeTab);
+                    mainContainer.getSelectionModel().select(runtimeTab);
+                });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void closeRuntime(RuntimeController runtime) {
+            Tab runtimeTab = runtimeTabs.get(runtime);
+            Platform.runLater(() -> mainContainer.getTabs().remove(runtimeTab));
         }
     }
 
-    private void onRuntimeDeath() {
-
+    @FXML
+    public void printStackTrace(Event event) {
+//        StringBuffer buffer = new StringBuffer();
+//
+//        if (event.getTarget() instanceof Node)
+//            printSceneGraph(((Node) event.getTarget()).getScene().getRoot(), buffer, "", "");
+//        else buffer.append(event.getTarget());
+//        System.out.println(buffer);
+        new Exception().printStackTrace();
     }
 
-    public class RuntimeAccessor {
+    private void printSceneGraph(Node node, StringBuffer buffer, String prefix, String childPrefix) {
+        buffer.append(prefix).append(node.getClass().getName()).append("\n");
+        if (node instanceof Parent) {
+            ObservableList<Node> children = ((Parent) node).getChildrenUnmodifiable();
+            for (Iterator<Node> iter = children.iterator(); iter.hasNext();) {
+                Node next = iter.next();
+                if (iter.hasNext()) {
+                    printSceneGraph(next, buffer, childPrefix + "├── ", childPrefix + "│   ");
+                } else {
+                    printSceneGraph(next, buffer, childPrefix + "└── ", childPrefix + "    ");
+                }
+            }
 
+        }
     }
 }
