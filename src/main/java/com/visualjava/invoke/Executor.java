@@ -1421,7 +1421,7 @@ public final class Executor {
 
 
         public static void impl_return(ExecutionContext context) {
-            context.frame().setReturnValue(null);
+            context.frame().setReturnValue(new VMNullReference());
         }
 
 
